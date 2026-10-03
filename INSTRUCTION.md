@@ -46,6 +46,9 @@ The Step 01 MVP specification has been agreed with the user:
 - Use the checklist below as the canonical implementation roadmap across sessions.
 - Select the earliest incomplete step whose dependencies are complete.
 - Follow AGENTS.md approval gates before significant implementation changes.
+- For every step that changes code, finish verification, commit and push the
+  changes, and create a pull request before starting the next step. Mark the
+  step's implementation work complete only after its pull request is created.
 - Mark a step complete only when its acceptance criteria and relevant checks pass.
 - Update this file with completed work, evidence, remaining tasks, and blockers
   before ending an implementation session.

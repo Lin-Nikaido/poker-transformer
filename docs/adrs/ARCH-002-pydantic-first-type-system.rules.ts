@@ -9,7 +9,7 @@ export default {
       check: async (ctx) => {
         const matches = await ctx.grepFiles(
           /^class\s+\w+\s*\(\s*BaseModel\s*\)/,
-          "src/trust/application/**/*.py",
+          "src/poker/application/**/*.py",
         );
         for (const match of matches) {
           ctx.report.violation({
@@ -17,7 +17,7 @@ export default {
               "Pydantic BaseModel subclass found in application/ — domain types should be defined in core/types/ and imported here",
             file: match.file,
             line: match.line,
-            fix: "Move this class to src/trust/core/types/ and import it in application/. For application-internal structures that need no external validation, use Python dataclass or TypedDict instead.",
+            fix: "Move this class to src/poker/core/types/ and import it in application/. For application-internal structures that need no external validation, use Python dataclass or TypedDict instead.",
           });
         }
       },
@@ -30,7 +30,7 @@ export default {
       check: async (ctx) => {
         const matches = await ctx.grepFiles(
           /^class\s+\w+\s*\(\s*BaseModel\s*\)/,
-          "src/trust/infrastructure/**/*.py",
+          "src/poker/infrastructure/**/*.py",
         );
         for (const match of matches) {
           ctx.report.violation({
@@ -38,7 +38,7 @@ export default {
               "Pydantic BaseModel subclass found in infrastructure/ — domain types must be defined in core/types/",
             file: match.file,
             line: match.line,
-            fix: "Move this class to src/trust/core/types/ and import it in infrastructure/.",
+            fix: "Move this class to src/poker/core/types/ and import it in infrastructure/.",
           });
         }
       },

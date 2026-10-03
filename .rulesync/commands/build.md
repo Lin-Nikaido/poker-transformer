@@ -1,6 +1,6 @@
 ---
 name: build
-description: "Implements a new feature for the TRUST backend from a GitHub Issue through a 6-phase workflow: requirements, exploration, clarification, design, plan (with user approval gate), TDD implementation, and quality review with draft PR creation."
+description: "Implements a new feature for the project from a GitHub Issue through a 6-phase workflow: requirements, exploration, clarification, design, plan (with user approval gate), TDD implementation, and quality review with draft PR creation."
 targets: ["*"]
 claudecode:
   skills:
@@ -87,8 +87,8 @@ Do not proceed until the user confirms the issue type and summary. _(Skipped in 
 Run **in parallel**:
 
 1. Apply **exploring-codebase**, focusing on the modules and feature areas mentioned in the issue.
-2. If the issue involves agents: Read `src/trust/core/agents/agent_registry.py` (dynamic agent management) and check existing agent metadata in DynamoDB.
-3. If the issue involves tools: Read `src/trust/core/tools/tool_registry.py` (auto-discovery mechanism) and scan `core/tools/*_tool.py` files.
+2. If the issue involves agents: Read `src/poker/core/agents/agent_registry.py` (dynamic agent management) and check existing agent metadata in DynamoDB.
+3. If the issue involves tools: Read `src/poker/core/tools/tool_registry.py` (auto-discovery mechanism) and scan `core/tools/*_tool.py` files.
 
 Present all reports. Identify conflicts or constraints the design must respect.
 
@@ -120,12 +120,12 @@ Produce the full plan. Present it and require explicit user approval before writ
 
 | File                          | Change Type     | Description |
 | ----------------------------- | --------------- | ----------- |
-| `src/trust/<layer>/<file>.py` | Create / Modify | <purpose>   |
+| `src/poker/<layer>/<file>.py` | Create / Modify | <purpose>   |
 
 **New Component Skeleton** (no real logic yet -- plan only):
 
 ```python
-# src/trust/<layer>/<file>.py
+# src/poker/<layer>/<file>.py
 class NewComponent:
     async def method(self, ...) -> ...:
         ...
@@ -169,7 +169,7 @@ c. Write the minimum implementation to pass the test
    -> uv run pytest tests/unittests/<path>/test_<name>.py -v  ->  🟢 GREEN
 d. Refactor if needed -> confirm still GREEN
 e. Repeat (b-d) for each remaining test case
-f. Run ruff on the changed file: uv run ruff check src/trust/<changed-file>.py
+f. Run ruff on the changed file: uv run ruff check src/poker/<changed-file>.py
 g. Mark the TODO item complete, then move to the next component
 ```
 
@@ -248,7 +248,7 @@ Resolves #<ISSUE_NUMBER>
 
 | File                  | Change           |
 | --------------------- | ---------------- |
-| `src/trust/<path>.py` | Added / Modified |
+| `src/poker/<path>.py` | Added / Modified |
 
 ## Test Plan
 

@@ -1,6 +1,6 @@
 ---
 name: fix
-description: "Fixes a bug in the TRUST backend from a GitHub Issue through a 6-phase workflow: bug analysis, root cause identification, clarification, solution design, plan (with user approval gate), minimal implementation, and quality review with draft PR creation."
+description: "Fixes a bug in the poker backend from a GitHub Issue through a 6-phase workflow: bug analysis, root cause identification, clarification, solution design, plan (with user approval gate), minimal implementation, and quality review with draft PR creation."
 targets: ["*"]
 claudecode:
   skills:
@@ -95,7 +95,7 @@ Run **in parallel**:
 1. Apply **exploring-codebase** focused on the modules mentioned in the error.
 2. Search for the error in the codebase:
    ```bash
-   grep -r "<ErrorClass or key phrase>" src/trust --include="*.py" -n
+   grep -r "<ErrorClass or key phrase>" src/poker --include="*.py" -n
    ```
 
 Then apply **investigating-bugs** using the issue summary and context report.
@@ -137,7 +137,7 @@ Based on the investigation and clarifications:
 | ----------------- | ------------------------------------------------ | --------------- |
 | Regression test   | `uv run pytest tests/unittests/<path>/ -v`       | No failures     |
 | Targeted fix test | `uv run pytest tests/unittests/<new-test>.py -v` | Passes          |
-| Ruff clean        | `uv run ruff check src/trust/<file>.py`          | No issues       |
+| Ruff clean        | `uv run ruff check src/poker/<file>.py`          | No issues       |
 
 Unit tests in the plan must not require LocalStack, real AWS, Microsoft 365, Box, Azure, Google APIs, or repository secrets. If the bug can be reproduced only with a real cloud service, put that test under `tests/integration/` and add the appropriate marker (`real_aws`, and `ecs` for ECS dispatch).
 
@@ -151,7 +151,7 @@ Produce the precise, minimal plan. Present it and require explicit user approval
 
 | File                  | Location            | Before      | After     |
 | --------------------- | ------------------- | ----------- | --------- |
-| `src/trust/<path>.py` | `<function>:<line>` | `<current>` | `<fixed>` |
+| `src/poker/<path>.py` | `<function>:<line>` | `<current>` | `<fixed>` |
 
 Show before/after snippet:
 
@@ -214,7 +214,7 @@ Refactor the fix for clarity if the minimum change is hard to read. Run tests ag
 **Step 4 -- Lint**
 
 ```bash
-uv run ruff check src/trust/<changed-file>.py
+uv run ruff check src/poker/<changed-file>.py
 ```
 
 Fix any issues before proceeding to Phase 7.

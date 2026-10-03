@@ -63,7 +63,7 @@ Report each violation as a **Critical Issue** in the review report:
 ```markdown
 ## Critical Issues -- must fix
 
-- [ADR ARCH-NNN] `src/trust/path/to/file.py:42`: <violation message from archgate check>
+- [ADR ARCH-NNN] `src/poker/path/to/file.py:42`: <violation message from archgate check>
   ADR: [ARCH-NNN: Title](docs/adrs/ARCH-NNN-xxx.md)
   Fix: <concrete fix instruction>
 ```

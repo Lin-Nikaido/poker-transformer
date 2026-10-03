@@ -21,7 +21,7 @@ A concrete example: a `ResponseSchema(BaseModel)` was defined inside `applicatio
 
 | Case                                       | Where to define the type                                                      |
 | ------------------------------------------ | ----------------------------------------------------------------------------- |
-| Domain types shared across multiple layers | `src/trust/core/types/` (Pydantic model)                                      |
+| Domain types shared across multiple layers | `src/poker/core/types/` (Pydantic model)                                      |
 | Fields specific to HTTP input validation   | `apis/schemas/request_schemas.py` (composes `core/types/`)                    |
 | Fields specific to HTTP response shaping   | `apis/schemas/response_schemas.py` (composes `core/types/`)                   |
 | Structures used only inside `application/` | Python `dataclass` or `TypedDict` (when no external I/O validation is needed) |
@@ -47,7 +47,7 @@ Abandons type strictness. Loses the benefits of Pydantic validation and IDE auto
 
 **Do:**
 
-- Add new domain types to `src/trust/core/types/` as Pydantic models
+- Add new domain types to `src/poker/core/types/` as Pydantic models
 - In `apis/schemas/`, wrap or compose types imported from `core/types/`
 - When a data structure is needed inside `application/` with no external I/O validation, use Python `dataclass` or `TypedDict`
 
@@ -60,4 +60,4 @@ Abandons type strictness. Loses the benefits of Pydantic validation and IDE auto
 ## References
 
 - [ARCH-001](./ARCH-001-clean-architecture.md) — 4-layer Clean Architecture
-- `src/trust/core/types/` — canonical list of domain types
+- `src/poker/core/types/` — canonical list of domain types

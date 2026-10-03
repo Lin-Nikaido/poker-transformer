@@ -106,7 +106,7 @@ Do this:
 import logging
 import traceback
 
-from trust.exceptions.error_handler import send_error_alert
+from poker.exceptions.error_handler import send_error_alert
 
 
 async def do_something(arg1, arg2):
@@ -143,7 +143,7 @@ def some_function(
 
 # when call
 result = some_function(
-    agent_name="trust",
+    agent_name="poker",
     prompts=["Hi", "hello"],
 )
 ```
@@ -155,7 +155,7 @@ def some_function(agent_name, prompts, config=None):
     # impl
 
 # when call3
-result = some_function("trust", ["Hi", "hello"])
+result = some_function("poker", ["Hi", "hello"])
 ```
 
 ### Define Types (ModelClass) across modules.
@@ -230,8 +230,8 @@ class FakeS3Client:
     def get_object(self, *, Bucket: str, Key: str):
         return {"Body": io.BytesIO(b"hello")}
 
-with patch("trust.infrastructure.dataloader.s3_dataloader.boto3.client", return_value=FakeS3Client()):
-    content = await S3Dataloader().get_content("s3://trust-tmp/hello.txt")
+with patch("poker.infrastructure.dataloader.s3_dataloader.boto3.client", return_value=FakeS3Client()):
+    content = await S3Dataloader().get_content("s3://poker-tmp/hello.txt")
 ```
 
 Also acceptable:
@@ -245,7 +245,7 @@ Do NOT do this:
 ```python
 @pytest.mark.skipif(bool(os.environ.get("AWS_ENDPOINT_URL")), reason="bucket missing in LocalStack")
 async def test_s3_walk_real_bucket():
-    await S3Dataloader().walk("s3://trust-tmp/")
+    await S3Dataloader().walk("s3://poker-tmp/")
 ```
 
 Real AWS, ECS, Microsoft 365, Box, Azure, and Google API checks belong in `tests/integration/` with explicit skip guards or markers. Real AWS tests must use `pytest.mark.real_aws`; ECS dispatch tests must also use `pytest.mark.ecs`. Do not change the default integration pytest command to exclude these markers; `tests/integration/conftest.py` skips them only when `AWS_ENDPOINT_URL` points to LocalStack.

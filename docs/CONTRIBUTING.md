@@ -1,8 +1,5 @@
 # CONTRIBUTING
 
-Thank you your joining to TRUST project!
-If you not have developer permission for this project. [Let us know](https://teams.microsoft.com/l/team/19%3A0y18oOqTlX8-UJnHBcdSMHWqPrv4U1dCbOprt_2Tu701%40thread.tacv2/conversations?groupId=7457ac2e-39ed-4471-b635-7a58c30ef8e7&tenantId=d1c1335e-f582-42a9-b6fe-5e1a16eb9bc8), We can invite you.
-
 # Get started
 
 1. At first install `uv`. See also [here](https://docs.astral.sh/uv/getting-started/installation/)
@@ -13,7 +10,7 @@ If you not have developer permission for this project. [Let us know](https://tea
     ```
 4. Make venv
     ```commandline
-    cd trust-core
+    cd poker
     uv venv --python "python3.12" ".venv"
     ```
 5. Install dependency

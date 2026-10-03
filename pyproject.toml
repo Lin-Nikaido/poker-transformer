@@ -1,5 +1,5 @@
 [project]
-name = "rec-navi-core"
+name = "poker-transformer"
 version = "0.1.0"
 requires-python = ">=3.12,<3.13"
 dependencies = [
@@ -73,12 +73,15 @@ ignore = [
     "SIM108", # if-else-block-instead-of-if-exp
     "D105",
     "D107",   # Missing docstring in `__init__`
+    "D203",   # incorrect-blank-line-before-class, use `blank-line-before-class` (D211)
     "D205",
+    "D212",   # multi-line-summary-first-line, use `multi-line-summary-second-line` (D213)
     "D400",   # First line should end with a period
     "D401",   # non-imperative mood
     "D414",
     "D415",
     "D417",
+    "COM812",
 ]
 
 
@@ -93,7 +96,7 @@ lines-after-imports = 2
 force-wrap-aliases = true
 combine-as-imports = false
 split-on-trailing-comma = true
-known-first-party = ["recnavi"]
+known-first-party = ["poker"]
 section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
 
 

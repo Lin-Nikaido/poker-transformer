@@ -14,7 +14,7 @@ export default {
       severity: "error",
       check: async (ctx) => {
         const applicationFiles = await ctx.glob(
-          "src/recnavi/application/**/*.py",
+          "src/poker/application/**/*.py",
         );
         const testFiles = await ctx.glob(
           "tests/unittests/application/**/*.py",
@@ -62,7 +62,7 @@ export default {
       severity: "error",
       check: async (ctx) => {
         const applicationFiles = await ctx.glob(
-          "src/recnavi/application/**/*.py",
+          "src/poker/application/**/*.py",
         );
         const testFiles = await ctx.glob(
           "tests/unittests/application/**/*.py",
@@ -83,7 +83,7 @@ export default {
 
           const coreCollaborators = [
             ...content.matchAll(
-              /from\s+(recnavi\.core(?:\.[\w]+)+)\s+import\s+([a-z_]\w*)/g,
+              /from\s+(poker\.core(?:\.[\w]+)+)\s+import\s+([a-z_]\w*)/g,
             ),
           ]
             .map((match) => match[2])
@@ -144,7 +144,7 @@ export default {
       severity: "error",
       check: async (ctx) => {
         const applicationFiles = await ctx.glob(
-          "src/recnavi/application/**/*.py",
+          "src/poker/application/**/*.py",
         );
         const testFiles = await ctx.glob(
           "tests/unittests/application/**/*.py",
@@ -204,7 +204,7 @@ export default {
         "Every FastAPI API endpoint must have a corresponding HTTP integration test under tests/integration/.",
       severity: "error",
       check: async (ctx) => {
-        const apiFiles = await ctx.glob("src/recnavi/apis/**/*.py");
+        const apiFiles = await ctx.glob("src/poker/apis/**/*.py");
         const testFiles = await ctx.glob("tests/integration/**/*.py");
         const routePattern =
           /@[A-Za-z_][\w.]*\.(get|post|put|patch|delete|options|head|trace)\s*\(\s*["']([^"']+)["']/g;
@@ -596,7 +596,7 @@ export default {
                 "  from unittest.mock import AsyncMock, patch",
                 "",
                 "  with patch(",
-                '      "trust.core.agents.website_reader_agent.tools.Html2MarkdownTextExtractor",',
+                '      "poker.core.agents.website_reader_agent.tools.Html2MarkdownTextExtractor",',
                 "      return_value=AsyncMock(return_value='mock content'),",
                 "  ):",
                 "      async for event in load_website('https://example.com/article'):",
@@ -617,7 +617,7 @@ export default {
 
     /**
      * monkeypatch.setattr() calls that pass a private attribute name (starting
-     * with "_") are almost always wrong in unit tests targeting TRUST classes.
+     * with "_") are almost always wrong in unit tests targeting classes.
      *
      * The most common mistake is patching an instance attribute that doesn't
      * exist because the external client is created per-call via

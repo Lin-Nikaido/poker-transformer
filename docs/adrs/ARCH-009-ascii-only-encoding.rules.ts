@@ -91,7 +91,7 @@ export default {
           if (file.includes('prompts.py')) continue
 
           // Skip scenarios.json
-          if (file.includes('src/trust/application/validation/')) continue
+          if (file.includes('src/poker/application/validation/')) continue
 
           const content = await ctx.readFile(file)
           const lines = content.split('\n')

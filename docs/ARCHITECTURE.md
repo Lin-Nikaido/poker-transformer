@@ -1,14 +1,8 @@
 # ARCHITECTURE
-This document explains about whole architecture of TRUST.
-
-
-## System Architecture
-See here[architecture.drawio](https://github.com/tmc-ccoe/trust-core/blob/dev/docs/architecture.drawio)
-
 
 ## Software Architecture
 
-`trust-core` consists of four layers. Dependencies always point inward (toward the Core Layer).
+This project consists of four layers. Dependencies always point inward (toward the Core Layer).
 Based on the Clean Architecture.
 
 ```mermaid
@@ -30,7 +24,7 @@ graph LR
   - The Application Layer is responsible for implementing use cases. It defines specific application behaviors using the business rules from the Core Layer.
 - **Core Layer**
   - Do NOT depend on any other layer.
-  - The Core Layer is responsible for the heart of the business logic and defines the essential rules and behaviors of `TRUST`.
+  - The Core Layer is responsible for the heart of the business logic and defines the essential rules and behaviors of this project.
     This layer is completely independent of technical implementation details.
 - **Infrastructure Layer**
   - Depends on the Core Layer (Implements interfaces defined in the Core Layer)
@@ -40,13 +34,13 @@ graph LR
 
 ## directory architecture
 ```
-+-- rec-navi-core/  # repo root
++-- poker-transformer/  # repo root
 +-- .github/
 +-- docs/
 +-- cli/  # CLI presentation
 |
 +-- src/  # source root
-|   +-- recnavi/
+|   +-- poker/
 |       +-- core/  # core layer
 |       |   +-- agent_runner/
 |       |   +-- agents/

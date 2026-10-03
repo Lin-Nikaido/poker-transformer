@@ -6,7 +6,7 @@ status: active
 date: 2026-05-08
 rules: true
 files:
-  - 'src/trust/**/*.py'
+  - 'src/poker/**/*.py'
   - 'tests/**/*.py'
 ---
 
@@ -58,7 +58,7 @@ except ValueError as e:  # Specific exception only
 # ✅ Do this (only at top-level error boundaries)
 import logging
 import traceback
-from trust.exceptions.error_handler import send_error_alert
+from poker.exceptions.error_handler import send_error_alert
 
 async def background_task(arg1: str, arg2: int) -> None:
     try:

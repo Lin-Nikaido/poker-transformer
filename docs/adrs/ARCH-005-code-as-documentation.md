@@ -6,7 +6,7 @@ status: active
 date: 2026-05-08
 rules: true
 files:
-  - 'src/trust/**/*.py'
+  - 'src/poker/**/*.py'
   - 'tests/**/*.py'
 ---
 

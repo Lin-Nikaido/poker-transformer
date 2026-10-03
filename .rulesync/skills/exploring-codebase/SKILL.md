@@ -1,6 +1,6 @@
 ---
 name: exploring-codebase
-description: Scans the TRUST project to understand the architecture, conventions, and existing patterns relevant to a planned change. Use before designing or implementing any feature or bug fix.
+description: Scans the project to understand the architecture, conventions, and existing patterns relevant to a planned change. Use before designing or implementing any feature or bug fix.
 ---
 
 # Exploring Codebase
@@ -14,18 +14,18 @@ Builds a focused picture of the existing code relevant to a task.
 ### Step 1: Locate Relevant Files
 
 ```bash
-grep -r "<topic>" src/trust --include="*.py" -l
-find src/trust -type f -name "*.py" -path "*<topic>*"
+grep -r "<topic>" src/poker --include="*.py" -l
+find src/poker -type f -name "*.py" -path "*<topic>*"
 ```
 
 Target the most affected layer:
 
 | Change type | Start here |
 |---|---|
-| New endpoint | `src/trust/apis/` |
-| Business logic | `src/trust/application/` or `src/trust/core/` |
-| New agent or tool | `src/trust/core/agents/` |
-| External client | `src/trust/infrastructure/` |
+| New endpoint | `src/poker/apis/` |
+| Business logic | `src/poker/application/` or `src/poker/core/` |
+| New agent or tool | `src/poker/core/agents/` |
+| External client | `src/poker/infrastructure/` |
 
 ### Step 2: Read Key Files
 

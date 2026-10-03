@@ -13,7 +13,7 @@ Output Markdown report in the following format:
 
 ### Issue #1: <Short description>
 
-- **File**: `src/trust/path/to/file.py`
+- **File**: `src/poker/path/to/file.py`
 - **Line**: 42
 - **Category**: Architecture
 - **Description**: <issue description>
@@ -23,7 +23,7 @@ Output Markdown report in the following format:
 
 ### Issue #2: <Short description>
 
-- **File**: `src/trust/path/to/file.py`
+- **File**: `src/poker/path/to/file.py`
 - **Line**: 88
 - **Category**: Type Safety
 - **Description**: <issue description>
@@ -34,7 +34,7 @@ Output Markdown report in the following format:
 
 ### Issue #3: <Short description>
 
-- **File**: `src/trust/path/to/file.py`
+- **File**: `src/poker/path/to/file.py`
 - **Line**: 120
 - **Category**: Async
 - **Description**: <issue description>

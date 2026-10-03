@@ -2,7 +2,7 @@
 name: enforcing-layer-boundaries
 description: >-
   Decide which layer owns each piece of new code and verify the result against
-  ARCH-001 and ARCH-014. Load before writing any file under src/recnavi/ during
+  ARCH-001 and ARCH-014. Load before writing any file under src/poker/ during
   a feature or fix, and again before the quality gate.
   Trigger: "which layer", "layer boundary", "use case", "router", "core vs
   application", "where does this go", "ARCH-014".
@@ -104,7 +104,7 @@ async def get_projects_endpoint(
 
 ## Step 3: Check the import table
 
-`apis/` may import `recnavi.core.types` for annotations. It may not import any
+`apis/` may import `poker.core.types` for annotations. It may not import any
 other `core/` module.
 
 | From              | May import                                            | Must never import                        |
@@ -117,10 +117,10 @@ other `core/` module.
 Verify with:
 
 ```bash
-grep -rn "from recnavi\.core\." src/recnavi/apis/ | grep -v "recnavi.core.types"
-grep -rnE "^(from|import) (fastapi|starlette)" src/recnavi/application/ src/recnavi/core/
-grep -rn "from recnavi\.infrastructure" src/recnavi/application/
-grep -rnE "from recnavi\.(apis|application)" src/recnavi/core/
+grep -rn "from poker\.core\." src/poker/apis/ | grep -v "poker.core.types"
+grep -rnE "^(from|import) (fastapi|starlette)" src/poker/application/ src/poker/core/
+grep -rn "from poker\.infrastructure" src/poker/application/
+grep -rnE "from poker\.(apis|application)" src/poker/core/
 ```
 
 Every command above must print nothing.
@@ -131,7 +131,7 @@ A use case is tested without FastAPI, using `MockDatabase` from
 `tests/mockups/`:
 
 ```
-src/recnavi/application/project/get_projects_usecase.py
+src/poker/application/project/get_projects_usecase.py
   -> tests/unittests/application/project/test_get_projects_usecase.py
 ```
 

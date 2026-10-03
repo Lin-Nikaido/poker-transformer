@@ -12,18 +12,18 @@ files:
 
 ## Context
 
-The TRUST backend is an AI-agent platform built on FastAPI + Google ADK. It integrates with diverse external systems — LLM backends, vector stores, document pipelines, and external SaaS APIs. Without explicit separation of concerns, the codebase becomes difficult to test and change over time.
+This project is transformer model develop and leaning system.
 
 ## Decision
 
-The `src/trust/` directory is organized into **4 layers**:
+The `src/poker/` directory is organized into **4 layers**:
 
 | Layer             | Path                        | Responsibility                                                                           |
 | ----------------- | --------------------------- | ---------------------------------------------------------------------------------------- |
-| `apis/`           | `src/trust/apis/`           | HTTP boundary: FastAPI routers, Pydantic request/response schemas                        |
-| `application/`    | `src/trust/application/`    | Use-case orchestration: coordinates core + infrastructure, no framework dependencies     |
-| `core/`           | `src/trust/core/`           | Domain logic: abstract base classes, registries, agents, preprocessors, type definitions |
-| `infrastructure/` | `src/trust/infrastructure/` | External I/O: DB adapters, external API clients, session services                        |
+| `apis/`           | `src/poker/apis/`           | HTTP boundary: FastAPI routers, Pydantic request/response schemas                        |
+| `application/`    | `src/poker/application/`    | Use-case orchestration: coordinates core + infrastructure, no framework dependencies     |
+| `core/`           | `src/poker/core/`           | Domain logic: abstract base classes, registries, agents, preprocessors, type definitions |
+| `infrastructure/` | `src/poker/infrastructure/` | External I/O: DB adapters, external API clients, session services                        |
 
 Dependency direction: `apis/ → application/ → core/ ← infrastructure/`
 

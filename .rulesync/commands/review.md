@@ -97,7 +97,7 @@ Display PR basic information:
 - Files changed: <N>
 
 ### Changed Files
-- src/trust/<layer>/<file>.py (+N, -N)
+- src/poker/<layer>/<file>.py (+N, -N)
 ...
 ```
 
@@ -118,7 +118,7 @@ Apply **exploring-codebase**, focusing on the modules and feature areas mentione
 Identify changed layers:
 
 ```bash
-grep -E '^diff --git' /tmp/pr-<NUMBER>.diff | grep -o 'src/trust/[^/]*' | sort -u
+grep -E '^diff --git' /tmp/pr-<NUMBER>.diff | grep -o 'src/poker/[^/]*' | sort -u
 ```
 
 Output example:
@@ -177,7 +177,7 @@ Output:
 ```markdown
 | ID | Source diff | Changed behavior |
 |---|---|---|
-| <Number> | `src/trust/...:<symbol>` | <behavior summary> |
+| <Number> | `src/poker/...:<symbol>` | <behavior summary> |
 ```
 
 
@@ -202,7 +202,7 @@ Output:
 ```markdown
 | ID | Source diff | Changed behavior | Required test scenarios |
 |---|---|---|---|
-| <Number> | `src/trust/...:<symbol>` | <behavior summary> | - <scenario1><\br>- <scenario2> |
+| <Number> | `src/poker/...:<symbol>` | <behavior summary> | - <scenario1><\br>- <scenario2> |
 ```
 
 
@@ -237,7 +237,7 @@ Output:
 ## Test Coverage
 | ID | Source diff | Changed behavior | Required test scenarios | Matching test | Status |
 |---|---|---|---|---|---|
-| <Number> | `src/trust/...:<symbol>` | <behavior summary> | - <scenario1><\br>- <scenario2> | `tests/...::<test_name>` or None | Covered / Missing |
+| <Number> | `src/poker/...:<symbol>` | <behavior summary> | - <scenario1><\br>- <scenario2> | `tests/...::<test_name>` or None | Covered / Missing |
 
 ```
 
@@ -665,7 +665,7 @@ For each Critical/Important issue:
 **3.1 -- Extract file and line information**
 
 From review report extract:
-- File path: `src/trust/path/to/file.py`
+- File path: `src/poker/path/to/file.py`
 - Line number: `42`
 - Category: `Architecture`
 - Issue description: `<issue description>`

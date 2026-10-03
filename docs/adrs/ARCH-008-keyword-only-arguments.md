@@ -6,7 +6,7 @@ status: active
 date: 2026-05-08
 rules: true
 files:
-  - 'src/trust/**/*.py'
+  - 'src/poker/**/*.py'
 ---
 
 ## Context
@@ -40,7 +40,7 @@ def some_function(
 
 # When calling
 result = some_function(
-    agent_name="trust",
+    agent_name="poker",
     prompts=["Hi", "hello"],
     config=my_config,
 )
@@ -73,7 +73,7 @@ def some_function(agent_name, prompts, config=None):
     # impl
 
 # When calling — unclear what each argument means
-result = some_function("trust", ["Hi", "hello"], my_config)
+result = some_function("poker", ["Hi", "hello"], my_config)
 ```
 
 **❌ Don't do this (positional arguments are fragile):**

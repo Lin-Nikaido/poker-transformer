@@ -73,7 +73,7 @@ status: active  # active | deprecated | superseded
 date: YYYY-MM-DD
 rules: false    # set true only when adding a companion .rules.ts
 files:          # glob patterns Archgate uses for automated checks (rules: true only)
-  - 'src/trust/**/*.py'
+  - 'src/poker/**/*.py'
 ---
 
 ## Context
@@ -129,7 +129,7 @@ Ask: **"Can a regex or glob catch the violation reliably?"**
 
 | Scenario                                                     | Create `.rules.ts`?                              |
 | ------------------------------------------------------------ | ------------------------------------------------ |
-| Forbidden import (`from trust.infrastructure import ...`)    | **Yes** -- regex on import lines                  |
+| Forbidden import (`from poker.infrastructure import ...`)    | **Yes** -- regex on import lines                  |
 | Forbidden pattern in layer (`asyncio.run()` in async path)   | **Yes** -- regex on source lines                  |
 | Forbidden directory exists (`core/repositories/`)            | **Yes** -- glob check                             |
 | Code review judgment ("keep functions small")                | **No** -- subjective, document in Compliance only |
@@ -207,9 +207,9 @@ ctx.report.info({ message, file?, line?, fix? })      // severity: info
 
 ```typescript
 // Bad: core/ importing from infrastructure/
-// src/trust/core/agents/some_agent/agent.py: from trust.infrastructure.database import ...
+// src/poker/core/agents/some_agent/agent.py: from poker.infrastructure.database import ...
 
-const matches = await ctx.grep(file, /from\s+trust\.infrastructure\b/)
+const matches = await ctx.grep(file, /from\s+poker\.infrastructure\b/)
 ctx.report.violation({
   message: `core/ must not import from infrastructure/ -- depend on core abstractions only`,
   file: match.file,
@@ -235,14 +235,14 @@ ctx.report.violation({
 #### 3. Forbidden directory (glob-based)
 
 ```typescript
-// Bad: src/trust/core/repositories/ exists (repositories belong in infrastructure/)
+// Bad: src/poker/core/repositories/ exists (repositories belong in infrastructure/)
 
-const files = await ctx.glob('src/trust/core/repositories/**')
+const files = await ctx.glob('src/poker/core/repositories/**')
 for (const file of files) {
   ctx.report.violation({
     message: `Concrete repository implementations belong in infrastructure/, not core/`,
     file,
-    fix: `Move to src/trust/infrastructure/ and expose via a core abstract base class`,
+    fix: `Move to src/poker/infrastructure/ and expose via a core abstract base class`,
   })
 }
 ```
@@ -252,7 +252,7 @@ for (const file of files) {
 ```typescript
 // Rule: tools must follow *_tool.py naming convention for auto-discovery by tool_registry
 
-const toolFiles = await ctx.glob('src/trust/core/tools/**/*.py')
+const toolFiles = await ctx.glob('src/poker/core/tools/**/*.py')
 for (const file of toolFiles) {
   const basename = file.split('/').pop()
   if (basename !== '__init__.py' && 
@@ -276,7 +276,7 @@ report({
   message: `Direct boto3 call outside infrastructure/ layer`,
   file: match.file,
   line: match.line,
-  fix: `Move AWS client calls to src/trust/infrastructure/external_clients/`,
+  fix: `Move AWS client calls to src/poker/infrastructure/external_clients/`,
 })
 ```
 

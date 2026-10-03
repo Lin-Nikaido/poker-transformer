@@ -23,7 +23,7 @@ import typer
 app = typer.Typer(
     no_args_is_help=True,
     add_completion=False,
-    help="trust-core CLI",
+    help="poker ai CLI",
 )
 
 

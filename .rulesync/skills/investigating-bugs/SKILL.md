@@ -1,6 +1,6 @@
 ---
 name: investigating-bugs
-description: Locates the root cause of a bug in the TRUST backend, identifies the exact file and line, assesses downstream impact, and proposes a minimal fix. Use after exploring the codebase for a bug issue.
+description: Locates the root cause of a bug in the project, identifies the exact file and line, assesses downstream impact, and proposes a minimal fix. Use after exploring the codebase for a bug issue.
 ---
 
 # Investigating Bugs
@@ -20,7 +20,7 @@ From the issue, identify:
 - **Reproducibility**: consistent or intermittent?
 
 ```bash
-grep -r "<ErrorClass or key phrase>" src/trust --include="*.py" -n
+grep -r "<ErrorClass or key phrase>" src/poker --include="*.py" -n
 ```
 
 ### Step 2: Trace to Root Cause
@@ -34,7 +34,7 @@ Read the call path from entry point to failure site:
 ### Step 3: Assess Impact
 
 ```bash
-grep -r "<broken function or class>" src/trust --include="*.py" -l
+grep -r "<broken function or class>" src/poker --include="*.py" -l
 ```
 
 - Which other modules import or call the broken code?
@@ -47,7 +47,7 @@ grep -r "<broken function or class>" src/trust --include="*.py" -l
 ## Bug Report
 
 ### Root Cause
-- **File**: `src/trust/<path>.py:<line>`
+- **File**: `src/poker/<path>.py:<line>`
 - **What's wrong**: <explanation>
 - **Why it wasn't caught**: <test gap or environment difference>
 

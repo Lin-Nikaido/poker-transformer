@@ -18,7 +18,7 @@ Poker AI transformer model develop
 ## Repository Layout
 
 ```
-src/recnavi/
+src/poker/
   cli/             # Typer CLI
   application/      # Use-case orchestration (chat, analysis, cms, dashboard, features, user, validation)
   core/             # Domain logic: agents, preprocessors, stores, types

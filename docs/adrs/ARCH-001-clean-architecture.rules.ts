@@ -8,11 +8,11 @@ export default {
       severity: "error",
       check: async (ctx) => {
         const matches = await ctx.grepFiles(
-          /from trust\.(application|apis)\b/,
-          "src/trust/infrastructure/**/*.py",
+          /from poker\.(application|apis)\b/,
+          "src/poker/infrastructure/**/*.py",
         );
         for (const match of matches) {
-          const target = match.content.includes("trust.application")
+          const target = match.content.includes("poker.application")
             ? "application"
             : "apis";
           ctx.report.violation({
@@ -31,8 +31,8 @@ export default {
       severity: "error",
       check: async (ctx) => {
         const matches = await ctx.grepFiles(
-          /from trust\.apis\b/,
-          "src/trust/application/**/*.py",
+          /from poker\.apis\b/,
+          "src/poker/application/**/*.py",
         );
         for (const match of matches) {
           ctx.report.violation({
@@ -52,8 +52,8 @@ export default {
       severity: "error",
       check: async (ctx) => {
         const matches = await ctx.grepFiles(
-          /from trust\.infrastructure\b/,
-          "src/trust/core/**/*.py",
+          /from poker\.infrastructure\b/,
+          "src/poker/core/**/*.py",
         );
         for (const match of matches) {
           ctx.report.violation({

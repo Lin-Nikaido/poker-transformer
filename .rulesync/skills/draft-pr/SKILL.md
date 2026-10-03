@@ -262,7 +262,7 @@ fix: migrate Cognito auth to USER_SRP_AUTH
 
 ## Changes
 
-### src/trust/auth -- infrastructure
+### src/poker/auth -- infrastructure
 
 - `auth.ts`: Changed auth flow to a 2-step process: `initiateAuth` / `respondToAuthChallenge`
 

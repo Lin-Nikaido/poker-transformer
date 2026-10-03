@@ -16,7 +16,6 @@ __pycache__/
 .env
 
 .DS_Store
-trust_gemini_key.json
 
 .idea/
 .vscode/

@@ -31,7 +31,7 @@ For each option:
 **Approach**: <1-2 sentences>
 
 **Files to create / modify**:
-- `src/trust/<layer>/<file>.py` -- <change description>
+- `src/poker/<layer>/<file>.py` -- <change description>
 
 **Pros**:
 - <pro>

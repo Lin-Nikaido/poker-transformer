@@ -1,0 +1,37 @@
+pre-commit:
+  parallel: true
+  commands:
+    gitleaks:
+      tags: security
+      run: |
+        gitleaks protect --staged --verbose
+
+    ruff:
+      tags: lint
+      glob: "*.py"
+      run: uv run ruff format {staged_files} && uv run ruff check --fix {staged_files}
+      stage_fixed: true
+
+    archgate:
+      tags: architecture
+      run: uv run python scripts/run_archgate.py --staged
+
+pre-push:
+  parallel: true
+  commands:
+    gitleaks-full:
+      tags: security
+      run: |
+        gitleaks detect --source . --verbose --log-opts "--full-history HEAD"
+
+    ruff-check:
+      tags: lint
+      run: uv run ruff format --check src/ cli/ && uv run ruff check src/ cli/
+
+    test:
+      tags: test
+      run: uv run pytest --disable-warnings -q --durations=10 -n auto --dist loadscope -m "not libreoffice" tests/unittests/
+
+    archgate:
+      tags: architecture
+      run: uv run python scripts/run_archgate.py --staged

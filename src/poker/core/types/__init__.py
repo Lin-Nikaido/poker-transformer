@@ -12,6 +12,7 @@ from poker.core.types.state import PlayerObservation
 from poker.core.types.state import PlayerState
 from poker.core.types.state import PrivateHand
 from poker.core.types.state import PublicGameState
+from poker.core.types.state import PublicPlayerState
 from poker.core.types.state import StackVector
 
 
@@ -27,6 +28,7 @@ __all__ = [
     "PlayerState",
     "PrivateHand",
     "PublicGameState",
+    "PublicPlayerState",
     "Seat",
     "StackVector",
     "Street",

@@ -188,15 +188,16 @@ The Step 01 MVP specification has been agreed with the user:
   CPU build loaded as `2.14.1+cpu`, and CUDA availability was false.
 - Step 03 completed: added typed cards, actions, public game state, player
   observations, private hands, player stacks, and a six-seat stack vector in
-  UTG, MP, CO, BTN, SB, BB order. Player observations contain public state and
-  only that player's private hand. All Pydantic models use camelCase aliases,
-  allow population by field name, and are immutable. `CardRank.DEUCE` names rank
-  two. Added `StackVector.from_players()` to derive seat-ordered stacks and
-  reject missing or duplicate seats.
-- Step 03 verification: all unit tests passed (4 total), Ruff format and lint
-  passed, `uv lock --check` passed, and layer import checks passed. Pydantic was
-  added to the lock. Archgate could not run because it is not installed; the
-  automatic approval reviewer rejected installing the npm package.
+  UTG, MP, CO, BTN, SB, BB order. `PlayerState` holds each player's private hand;
+  `get_public_state()` returns a `PublicPlayerState` with `hand=None`, and
+  `PublicGameState` contains only public player states. Player observations
+  contain public state and only the observing player's private hand. All
+  Pydantic models use camelCase aliases, allow population by field name, and are
+  immutable. `CardRank.DEUCE` names rank two. `StackVector.from_players()`
+  derives seat-ordered stacks and rejects missing or duplicate seats.
+- Step 03 verification: all unit tests passed (5 total), Ruff format and lint
+  passed, `uv lock --check` and layer import checks passed. The commit hooks ran
+  Archgate successfully (36 rules passed) and found no secrets.
 
 ## Session Handoff
 
@@ -204,15 +205,12 @@ Update these fields at the end of each implementation session:
 
 - Active step: 04 (Steps 01-03 complete).
 - Work completed this session: added the pre-training interactive `play` CLI
-  roadmap step, implemented typed poker domain models and the tested seat-order
-  stack conversion, applied camelCase aliases to all models, and updated the
-  dependency lock.
-- Verification evidence: all 4 unit tests passed, Ruff format and lint passed,
-  `uv lock --check` and `git diff --check` passed, and layer import checks
-  passed.
+  roadmap step, implemented typed poker domain models, private-to-public player
+  state projection, and tested seat-order stack conversion. Applied camelCase
+  aliases to all models and updated the dependency lock.
+- Verification evidence: all 5 unit tests passed, Ruff format and lint passed,
+  `uv lock --check` and `git diff --check` passed, layer import checks passed,
+  and Archgate passed all 36 rules in the commit hook.
 - Remaining work: Step 04, select and integrate a game engine.
-- Blockers: the Archgate quality check remains unrun. The automatic approval
-  reviewer rejected installing the npm package because its install scripts can
-  execute arbitrary code.
-- Next action: evaluate game engine options for Step 04. Obtain approval before
-  installing Archgate if an automated ADR check is needed for a PR.
+- Blockers: none for beginning Step 04.
+- Next action: evaluate game engine options for Step 04.

@@ -15,7 +15,47 @@ from poker.core.types.primitives import Seat
 from poker.core.types.primitives import Street
 
 
+class PrivateHand(BaseModel):
+    """The two private cards visible to one player."""
+
+    model_config = ConfigDict(
+        alias_generator=alias_generators.to_camel,
+        populate_by_name=True,
+        frozen=True,
+    )
+
+    cards: tuple[Card, Card]
+
+
 class PlayerState(BaseModel):
+    """Complete state for one player, including private cards."""
+
+    model_config = ConfigDict(
+        alias_generator=alias_generators.to_camel,
+        populate_by_name=True,
+        frozen=True,
+    )
+
+    seat: Seat
+    stack: ChipAmount
+    committed: ChipAmount = Decimal("0")
+    is_folded: bool = False
+    is_all_in: bool = False
+    hand: PrivateHand | None = None
+
+    def get_public_state(self) -> "PublicPlayerState":
+        """Return public player fields with private cards removed."""
+        return PublicPlayerState(
+            seat=self.seat,
+            stack=self.stack,
+            committed=self.committed,
+            is_folded=self.is_folded,
+            is_all_in=self.is_all_in,
+            hand=None,
+        )
+
+
+class PublicPlayerState(BaseModel):
     """Public chip and participation state for one seat."""
 
     model_config = ConfigDict(
@@ -29,6 +69,7 @@ class PlayerState(BaseModel):
     committed: ChipAmount = Decimal("0")
     is_folded: bool = False
     is_all_in: bool = False
+    hand: None = None
 
 
 class StackVector(BaseModel):
@@ -65,18 +106,6 @@ class StackVector(BaseModel):
         return cls(values=tuple(players_by_seat[seat].stack for seat in Seat))
 
 
-class PrivateHand(BaseModel):
-    """The two private cards visible to one player."""
-
-    model_config = ConfigDict(
-        alias_generator=alias_generators.to_camel,
-        populate_by_name=True,
-        frozen=True,
-    )
-
-    cards: tuple[Card, Card]
-
-
 class PublicGameState(BaseModel):
     """Game state containing only information visible to every player."""
 
@@ -90,12 +119,12 @@ class PublicGameState(BaseModel):
     pot: ChipAmount
     current_actor: Seat
     players: tuple[
-        PlayerState,
-        PlayerState,
-        PlayerState,
-        PlayerState,
-        PlayerState,
-        PlayerState,
+        PublicPlayerState,
+        PublicPlayerState,
+        PublicPlayerState,
+        PublicPlayerState,
+        PublicPlayerState,
+        PublicPlayerState,
     ]
     community_cards: tuple[Card, ...] = Field(max_length=5)
     action_history: tuple[ActionHistoryEntry, ...]

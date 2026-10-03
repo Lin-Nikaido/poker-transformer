@@ -2,9 +2,30 @@ from decimal import Decimal
 
 import pytest
 
+from poker.core.types.cards import Card
+from poker.core.types.cards import CardRank
+from poker.core.types.cards import Suit
 from poker.core.types.state import PlayerState
+from poker.core.types.state import PrivateHand
 from poker.core.types.state import Seat
 from poker.core.types.state import StackVector
+
+
+def test_player_state_public_projection_hides_hand() -> None:
+    hand = PrivateHand(
+        cards=(
+            Card(rank=CardRank.DEUCE, suit=Suit.CLUBS),
+            Card(rank=CardRank.ACE, suit=Suit.HEARTS),
+        )
+    )
+    player = PlayerState(seat=Seat.UTG, stack=Decimal("80"), hand=hand)
+
+    public_state = player.get_public_state()
+
+    assert public_state.seat == player.seat
+    assert public_state.stack == player.stack
+    assert public_state.hand is None
+    assert player.hand == hand
 
 
 def test_stack_vector_orders_player_stacks_by_seat() -> None:

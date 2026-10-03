@@ -41,6 +41,10 @@ If you not have developer permission for this project. [Let us know](https://tea
         1. Download exe from [gitleaks](https://github.com/gitleaks/gitleaks/releases).
         2. Unpack and place exe into local. (e.g.: `C:\Users\{USER_NAME}\.gitleaks`)
         3. Set Path.
+   4. Install [lefthook](https://github.com/evilmartians/lefthook) (git hooks manager).
+        ```commandline
+        uv run lefthook install
+        ```
 
 7. Run in local as trial.
     ```commandline

@@ -21,7 +21,6 @@ class PrivateHand(BaseModel):
     model_config = ConfigDict(
         alias_generator=alias_generators.to_camel,
         populate_by_name=True,
-        frozen=True,
     )
 
     cards: tuple[Card, Card]
@@ -33,7 +32,6 @@ class PublicPlayerState(BaseModel):
     model_config = ConfigDict(
         alias_generator=alias_generators.to_camel,
         populate_by_name=True,
-        frozen=True,
         revalidate_instances="always",
     )
 
@@ -50,7 +48,6 @@ class PlayerState(PublicPlayerState):
     model_config = ConfigDict(
         alias_generator=alias_generators.to_camel,
         populate_by_name=True,
-        frozen=True,
     )
 
     hand: PrivateHand | None = None
@@ -66,7 +63,6 @@ class StackVector(BaseModel):
     model_config = ConfigDict(
         alias_generator=alias_generators.to_camel,
         populate_by_name=True,
-        frozen=True,
     )
 
     values: tuple[
@@ -100,7 +96,6 @@ class PublicGameState(BaseModel):
     model_config = ConfigDict(
         alias_generator=alias_generators.to_camel,
         populate_by_name=True,
-        frozen=True,
     )
 
     street: Street
@@ -124,7 +119,6 @@ class PlayerObservation(BaseModel):
     model_config = ConfigDict(
         alias_generator=alias_generators.to_camel,
         populate_by_name=True,
-        frozen=True,
     )
 
     seat: Seat

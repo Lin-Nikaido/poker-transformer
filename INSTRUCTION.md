@@ -194,7 +194,8 @@ The Step 01 MVP specification has been agreed with the user:
   so private hand fields cannot pass through. Player observations contain
   public state and only the observing player's private hand. All Pydantic
   models use camelCase aliases, allow population by field name, and are
-  immutable. `CardRank.DEUCE` names rank two. `StackVector.from_players()`
+  mutable for game-state updates. `CardRank.DEUCE` names rank two.
+  `StackVector.from_players()`
   derives seat-ordered stacks and rejects missing or duplicate seats.
 - Step 03 verification: all unit tests passed (6 total), Ruff format and lint
   passed, `uv lock --check` and layer import checks passed. The commit hooks ran

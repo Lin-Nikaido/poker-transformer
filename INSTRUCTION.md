@@ -69,11 +69,9 @@ The Step 01 MVP specification has been agreed with the user:
   for domain logic, model computation, orchestration, and external I/O, including
   the async I/O boundary. Dependencies: 01.
 
-- [ ] **03. Define typed poker states and actions.**
+- [x] **03. Define typed poker states and actions.**
   Model cards, public observations, private hands, action history, chip amounts,
-  each player's stack, and actions. Include a six-seat stack input in UTG, MP,
-  CO, BTN, SB, BB order, sourced from the corresponding player states. At hand
-  start the values are naturally 100 BB each. Validate inputs and prevent
+  each player's stack, and actions. Validate inputs and prevent
   hidden-information leakage.
   Dependencies: 01, 02.
 
@@ -100,16 +98,21 @@ The Step 01 MVP specification has been agreed with the user:
   policies first; connect the Transformer after Step 09. Separate training seeds
   and games from fixed evaluation runs. Dependencies: 03, 06.
 
-- [ ] **08. Implement state and history tokenization.**
-  Encode cards, position, amounts, and action history. Define and test padding,
-  masking, and history-length handling. Dependencies: 07.
+- [ ] **08. Implement observation and history encoding.**
+  At the training/model-input boundary, create a function that converts the full
+  player observation and action history into embedding-ready model inputs.
+  Include each seat's stack as a dedicated input in UTG, MP, CO, BTN, SB, BB
+  order, sourced from the corresponding public player states; at hand start the
+  values naturally equal 100 BB. Do not define a standalone domain `StackVector`
+  type unless the encoder/model interface later demonstrates that it is needed.
+  Share the encoder with inference. Define and test padding, masking, and
+  history-length handling. Dependencies: 07.
 
 - [ ] **09. Implement the minimal Transformer policy.**
   Produce action distributions, the agreed bet-size representation, and value
-  estimates if required by the selected algorithm. Include six per-player stack
-  inputs sourced from game state in seat order; at hand start they naturally
-  contain 100 BB each.
-  Verify tensor shapes, future-information masking, and legal-action masking.
+  estimates if required by the selected algorithm. Consume the full encoded
+  observation, including the six seat-ordered stack inputs from Step 08. Verify
+  tensor shapes, future-information masking, and legal-action masking.
   Dependencies: 05, 08.
 
 - [ ] **10. Add interactive play CLI against a random policy.**
@@ -171,8 +174,8 @@ The Step 01 MVP specification has been agreed with the user:
     rule-based, and frozen-policy opponents, and a target of positive mean
     profit with a 95% confidence interval above zero over at least 20,000
     hands against the fixed rule-based opponent, repeated across seeds.
-- Implementation steps completed: 01 and 02.
-- Next step: 03, define typed poker states and actions.
+- Implementation steps completed: 01, 02, and 03.
+- Next step: 04, select and integrate a game engine.
 - Open decisions: none for the agreed MVP requirements. Validate the all-in
   sizing rule against legal game transitions in Steps 04-05.
 - Step 02 completed: aligned README, architecture guidance, contributing
@@ -186,23 +189,37 @@ The Step 01 MVP specification has been agreed with the user:
   settings are centralized in `pyproject.toml`; `pytest.ini` was removed.
   Importing PyTorch reported that optional NumPy support is unavailable; the
   CPU build loaded as `2.14.1+cpu`, and CUDA availability was false.
+- Step 03 completed: added typed cards, actions, per-street grouped action
+  history, public game state, player observations, private hands, and player
+  stacks. `PublicPlayerState` contains
+  public fields;
+  `PlayerState` extends it with the private hand, and `get_public_state()`
+  returns the public base type. `TableState` revalidates player subclasses
+  so private hand fields cannot pass through. Player observations contain
+  public state and only the observing player's private hand. All Pydantic
+  models use camelCase aliases, allow population by field name, and are
+  mutable for game-state updates. `CardRank.DEUCE` names rank two. Stack input
+  encoding is deferred to Step 08 and will encode the full observation rather
+  than a standalone `StackVector` domain object.
+- Step 03 verification: all unit tests passed (3 total), Ruff format and lint
+  passed, `uv lock --check` and layer import checks passed. The commit hooks ran
+  Archgate successfully (36 rules passed) and found no secrets.
 
 ## Session Handoff
 
 Update these fields at the end of each implementation session:
 
-- Active step: 03 (Steps 01 and 02 complete).
-- Work completed this session: added Step 10 for a pre-training interactive
-  `play` CLI against a random legal-action policy, and renumbered the following
-  roadmap steps. This is a roadmap update only; implementation remains at Step
-  03. Previous session work updated the README, architecture guide, contributing
-  guide, rulesync overview, PyTorch CPU dependency configuration, pytest
-  configuration, and installed CLI entry point. Kept both the `Get started`
-  and `Start contributing` sections.
-- Verification evidence: `uv lock --check`, `poker --help`, Ruff formatting,
-  Ruff lint, and unit tests passed. PyTorch loaded as `2.14.1+cpu`. Pytest
-  loaded configuration from `pyproject.toml`. `git diff --check` passed.
-- Remaining work: Step 03, define typed poker states and actions.
-- Blockers: Step 03 implementation is waiting for approval of its plan.
-- Next action: review the state/action design requirements and existing domain
-  conventions before implementing Step 03.
+- Active step: 04 (Steps 01-03 complete).
+- Work completed this session: added the pre-training interactive `play` CLI
+  roadmap step, implemented typed poker domain models, public-state inheritance,
+  hand redaction, deferred standalone stack-vector modeling to Step 08, and
+  recorded the full-observation model encoder. Added the no-re-export rule to
+  `docs/CODING_RULES.md` and removed package-level type exports. Grouped public
+  action history by street. Applied camelCase aliases to all models and updated
+  the dependency lock.
+- Verification evidence: all 3 unit tests passed, Ruff format and lint passed,
+  `uv lock --check` and `git diff --check` passed, layer import checks passed,
+  and Archgate passed all 36 rules in the commit hook.
+- Remaining work: Step 04, select and integrate a game engine.
+- Blockers: none for beginning Step 04.
+- Next action: evaluate game engine options for Step 04.

@@ -194,7 +194,7 @@ The Step 01 MVP specification has been agreed with the user:
   stacks. `PublicPlayerState` contains
   public fields;
   `PlayerState` extends it with the private hand, and `get_public_state()`
-  returns the public base type. `PublicGameState` revalidates player subclasses
+  returns the public base type. `TableState` revalidates player subclasses
   so private hand fields cannot pass through. Player observations contain
   public state and only the observing player's private hand. All Pydantic
   models use camelCase aliases, allow population by field name, and are

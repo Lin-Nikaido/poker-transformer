@@ -57,3 +57,14 @@ class Card(BaseModel):
 
     rank: CardRank
     suit: Suit
+
+
+class Hand(BaseModel):
+    """The two private cards visible to one player."""
+
+    model_config = ConfigDict(
+        alias_generator=alias_generators.to_camel,
+        populate_by_name=True,
+    )
+
+    cards: tuple[Card, Card]

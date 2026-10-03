@@ -27,7 +27,24 @@ class PrivateHand(BaseModel):
     cards: tuple[Card, Card]
 
 
-class PlayerState(BaseModel):
+class PublicPlayerState(BaseModel):
+    """Public chip and participation state for one seat."""
+
+    model_config = ConfigDict(
+        alias_generator=alias_generators.to_camel,
+        populate_by_name=True,
+        frozen=True,
+        revalidate_instances="always",
+    )
+
+    seat: Seat
+    stack: ChipAmount
+    committed: ChipAmount = Decimal("0")
+    is_folded: bool = False
+    is_all_in: bool = False
+
+
+class PlayerState(PublicPlayerState):
     """Complete state for one player, including private cards."""
 
     model_config = ConfigDict(
@@ -36,40 +53,11 @@ class PlayerState(BaseModel):
         frozen=True,
     )
 
-    seat: Seat
-    stack: ChipAmount
-    committed: ChipAmount = Decimal("0")
-    is_folded: bool = False
-    is_all_in: bool = False
     hand: PrivateHand | None = None
 
-    def get_public_state(self) -> "PublicPlayerState":
+    def get_public_state(self) -> PublicPlayerState:
         """Return public player fields with private cards removed."""
-        return PublicPlayerState(
-            seat=self.seat,
-            stack=self.stack,
-            committed=self.committed,
-            is_folded=self.is_folded,
-            is_all_in=self.is_all_in,
-            hand=None,
-        )
-
-
-class PublicPlayerState(BaseModel):
-    """Public chip and participation state for one seat."""
-
-    model_config = ConfigDict(
-        alias_generator=alias_generators.to_camel,
-        populate_by_name=True,
-        frozen=True,
-    )
-
-    seat: Seat
-    stack: ChipAmount
-    committed: ChipAmount = Decimal("0")
-    is_folded: bool = False
-    is_all_in: bool = False
-    hand: None = None
+        return PublicPlayerState.model_validate(self)
 
 
 class StackVector(BaseModel):

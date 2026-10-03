@@ -26,7 +26,7 @@ pre-push:
 
     ruff-check:
       tags: lint
-      run: uv run ruff format --check src/ cli/ && uv run ruff check src/ cli/
+      run: uv run ruff format --check src/ tests/ && uv run ruff check src/ tests/
 
     test:
       tags: test

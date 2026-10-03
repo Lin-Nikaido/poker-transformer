@@ -23,6 +23,7 @@ trust_gemini_key.json
 
 # AI tool configuration files
 **/AGENTS.md
+**/CLAUDE.md
 **/.agents/
 **/.augment/rules/
 **/.augment-guidelines

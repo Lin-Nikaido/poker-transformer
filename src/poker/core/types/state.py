@@ -1,6 +1,5 @@
 """Typed public state and player-specific observations."""
 
-from collections.abc import Sequence
 from decimal import Decimal
 
 from pydantic import BaseModel
@@ -55,39 +54,6 @@ class PlayerState(PublicPlayerState):
     def get_public_state(self) -> PublicPlayerState:
         """Return public player fields with private cards removed."""
         return PublicPlayerState.model_validate(self)
-
-
-class StackVector(BaseModel):
-    """Six stack amounts in UTG, MP, CO, BTN, SB, BB order."""
-
-    model_config = ConfigDict(
-        alias_generator=alias_generators.to_camel,
-        populate_by_name=True,
-    )
-
-    values: tuple[
-        ChipAmount,
-        ChipAmount,
-        ChipAmount,
-        ChipAmount,
-        ChipAmount,
-        ChipAmount,
-    ]
-
-    @classmethod
-    def from_players(
-        cls,
-        *,
-        players: Sequence[PlayerState],
-    ) -> "StackVector":
-        """Build the model stack input from one state per seat."""
-        players_by_seat = {player.seat: player for player in players}
-        if len(players_by_seat) != len(Seat) or set(players_by_seat) != set(
-            Seat
-        ):
-            raise ValueError("Expected exactly one player per seat")
-
-        return cls(values=tuple(players_by_seat[seat].stack for seat in Seat))
 
 
 class PublicGameState(BaseModel):

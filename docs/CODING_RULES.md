@@ -207,6 +207,12 @@ user = {
 send_greeting_mail(user)
 ```
 
+### Do NOT re-export from package `__init__.py` files.
+
+Import a class or function from the module where it is defined. Keep package
+`__init__.py` files empty instead of building a second public API through
+re-exports.
+
 ### Do NOT fear wide-reaching changes
 
 Do not avoid changes only because they affect many parts of the system.

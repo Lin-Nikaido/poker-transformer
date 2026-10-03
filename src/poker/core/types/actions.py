@@ -4,11 +4,11 @@ from enum import StrEnum
 
 from pydantic import BaseModel
 from pydantic import ConfigDict
+from pydantic import Field
 from pydantic import alias_generators
 
 from poker.core.types.primitives import ChipAmount
 from poker.core.types.primitives import Seat
-from poker.core.types.primitives import Street
 
 
 class ActionKind(StrEnum):
@@ -46,7 +46,7 @@ class Action(BaseModel):
 
 
 class ActionHistoryEntry(BaseModel):
-    """A public action together with its actor and betting street."""
+    """A public action together with its actor."""
 
     model_config = ConfigDict(
         alias_generator=alias_generators.to_camel,
@@ -54,5 +54,18 @@ class ActionHistoryEntry(BaseModel):
     )
 
     actor: Seat
-    street: Street
     action: Action
+
+
+class ActionHistory(BaseModel):
+    """Public actions grouped by betting street."""
+
+    model_config = ConfigDict(
+        alias_generator=alias_generators.to_camel,
+        populate_by_name=True,
+    )
+
+    preflop: list[ActionHistoryEntry] = Field(default_factory=list)
+    flop: list[ActionHistoryEntry] = Field(default_factory=list)
+    turn: list[ActionHistoryEntry] = Field(default_factory=list)
+    river: list[ActionHistoryEntry] = Field(default_factory=list)

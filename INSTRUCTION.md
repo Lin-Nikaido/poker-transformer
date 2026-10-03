@@ -189,8 +189,9 @@ The Step 01 MVP specification has been agreed with the user:
   settings are centralized in `pyproject.toml`; `pytest.ini` was removed.
   Importing PyTorch reported that optional NumPy support is unavailable; the
   CPU build loaded as `2.14.1+cpu`, and CUDA availability was false.
-- Step 03 completed: added typed cards, actions, public game state, player
-  observations, private hands, and player stacks. `PublicPlayerState` contains
+- Step 03 completed: added typed cards, actions, per-street grouped action
+  history, public game state, player observations, private hands, and player
+  stacks. `PublicPlayerState` contains
   public fields;
   `PlayerState` extends it with the private hand, and `get_public_state()`
   returns the public base type. `PublicGameState` revalidates player subclasses
@@ -213,8 +214,9 @@ Update these fields at the end of each implementation session:
   roadmap step, implemented typed poker domain models, public-state inheritance,
   hand redaction, deferred standalone stack-vector modeling to Step 08, and
   recorded the full-observation model encoder. Added the no-re-export rule to
-  `docs/CODING_RULES.md` and removed package-level type exports. Applied
-  camelCase aliases to all models and updated the dependency lock.
+  `docs/CODING_RULES.md` and removed package-level type exports. Grouped public
+  action history by street. Applied camelCase aliases to all models and updated
+  the dependency lock.
 - Verification evidence: all 3 unit tests passed, Ruff format and lint passed,
   `uv lock --check` and `git diff --check` passed, layer import checks passed,
   and Archgate passed all 36 rules in the commit hook.

@@ -7,7 +7,7 @@ from pydantic import ConfigDict
 from pydantic import Field
 from pydantic import alias_generators
 
-from poker.core.types.actions import ActionHistoryEntry
+from poker.core.types.actions import ActionHistory
 from poker.core.types.cards import Card
 from poker.core.types.primitives import ChipAmount
 from poker.core.types.primitives import Seat
@@ -76,7 +76,7 @@ class PublicGameState(BaseModel):
         PublicPlayerState,
     ]
     community_cards: tuple[Card, ...] = Field(max_length=5)
-    action_history: tuple[ActionHistoryEntry, ...]
+    action_history: ActionHistory
 
 
 class PlayerObservation(BaseModel):

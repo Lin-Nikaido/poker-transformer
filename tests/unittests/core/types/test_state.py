@@ -1,9 +1,10 @@
 from decimal import Decimal
 
-from poker.core.types.actions import Street
+from poker.core.types.actions import ActionHistory
 from poker.core.types.cards import Card
 from poker.core.types.cards import CardRank
 from poker.core.types.cards import Suit
+from poker.core.types.primitives import Street
 from poker.core.types.state import PlayerState
 from poker.core.types.state import PrivateHand
 from poker.core.types.state import PublicGameState
@@ -51,7 +52,7 @@ def test_public_game_state_revalidates_player_subclasses() -> None:
         current_actor=Seat.UTG,
         players=players,
         community_cards=(),
-        action_history=(),
+        action_history=ActionHistory(),
     )
 
     assert type(public_state.players[0]) is PublicPlayerState

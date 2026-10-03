@@ -112,7 +112,14 @@ The Step 01 MVP specification has been agreed with the user:
   Verify tensor shapes, future-information masking, and legal-action masking.
   Dependencies: 05, 08.
 
-- [ ] **10. Implement RL updates, self-play opponents, and checkpoints.**
+- [ ] **10. Add interactive play CLI against a random policy.**
+  Allow a person to play a hand from the CLI against an opponent that randomly
+  selects from its legal actions. Use this as a pre-training gameplay smoke test
+  after the game rules and policy interface are available. Keep the opponent
+  behind a policy interface so a constructed or trained model can be selected
+  later. Dependencies: 05, 09.
+
+- [ ] **11. Implement RL updates, self-play opponents, and checkpoints.**
   Connect self-play collection to the Transformer and implement the selected
   algorithm's policy and value updates as applicable. Manage frozen historical
   opponents and their sampling alongside current-policy self-play. Verify a small
@@ -121,22 +128,22 @@ The Step 01 MVP specification has been agreed with the user:
   opponent-pool state. Record configuration, seeds, rewards, update metrics,
   and policy versions. Dependencies: 07, 09.
 
-- [ ] **11. Implement inference and CLI commands.**
+- [ ] **12. Implement inference and CLI commands.**
   Load a checkpoint and return legal actions from observations. Share
   preprocessing between training and inference. Expose the agreed training,
-  inference, and evaluation entry points. Dependencies: 10.
+  inference, and evaluation entry points. Dependencies: 11.
 
-- [ ] **12. Implement baseline players and match evaluation.**
+- [ ] **13. Implement baseline players and match evaluation.**
   Compare against fixed random, simple rule-based, and frozen historical policies.
   Rotate seats and record trial counts, chip-profit metrics, and uncertainty.
   Keep evaluation outside learning updates; self-play rewards alone do not
-  demonstrate improved strength. Dependencies: 05, 11.
+  demonstrate improved strength. Dependencies: 05, 12.
 
-- [ ] **13. Verify and report the complete MVP.**
+- [ ] **14. Verify and report the complete MVP.**
   Reproduce self-play collection, RL updates, checkpoint resumption, inference,
   and match evaluation.
   Document results, limitations, and evidence-based improvement candidates.
-  Run the required quality checks. Dependencies: 12.
+  Run the required quality checks. Dependencies: 13.
 
 ## Current Progress
 
@@ -185,14 +192,17 @@ The Step 01 MVP specification has been agreed with the user:
 Update these fields at the end of each implementation session:
 
 - Active step: 03 (Steps 01 and 02 complete).
-- Work completed this session: updated the README, architecture guide,
-  contributing guide, rulesync overview, PyTorch CPU dependency configuration,
-  pytest configuration, and installed CLI entry point. Kept both the
-  `Get started` and `Start contributing` sections.
+- Work completed this session: added Step 10 for a pre-training interactive
+  `play` CLI against a random legal-action policy, and renumbered the following
+  roadmap steps. This is a roadmap update only; implementation remains at Step
+  03. Previous session work updated the README, architecture guide, contributing
+  guide, rulesync overview, PyTorch CPU dependency configuration, pytest
+  configuration, and installed CLI entry point. Kept both the `Get started`
+  and `Start contributing` sections.
 - Verification evidence: `uv lock --check`, `poker --help`, Ruff formatting,
   Ruff lint, and unit tests passed. PyTorch loaded as `2.14.1+cpu`. Pytest
   loaded configuration from `pyproject.toml`. `git diff --check` passed.
 - Remaining work: Step 03, define typed poker states and actions.
-- Blockers: none for beginning Step 03.
+- Blockers: Step 03 implementation is waiting for approval of its plan.
 - Next action: review the state/action design requirements and existing domain
   conventions before implementing Step 03.

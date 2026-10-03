@@ -62,7 +62,7 @@ The Step 01 MVP specification has been agreed with the user:
   learning is confirmed and must remain the learning approach.
   Record the agreed specification in this file. Dependencies: none.
 
-- [ ] **02. Align the project structure and development environment.**
+- [x] **02. Align the project structure and development environment.**
   Align documentation, package names, and configuration with `src/poker/`;
   remove stale project references where applicable. Add the required PyTorch
   dependencies and verify the CLI and quality checks. Define layer ownership
@@ -164,24 +164,35 @@ The Step 01 MVP specification has been agreed with the user:
     rule-based, and frozen-policy opponents, and a target of positive mean
     profit with a 95% confidence interval above zero over at least 20,000
     hands against the fixed rule-based opponent, repeated across seeds.
-- Implementation steps completed: none.
-- Next step: 02, align the project structure and development environment.
+- Implementation steps completed: 01 and 02.
+- Next step: 03, define typed poker states and actions.
 - Open decisions: none for the agreed MVP requirements. Validate the all-in
   sizing rule against legal game transitions in Steps 04-05.
-- Known inconsistency: existing documents reference TRUST and recnavi while
-  the package is `src/poker/`; resolve in Step 02.
-- Verification for this update: documentation only; no implementation tests required.
+- Step 02 completed: aligned README, architecture guidance, contributing
+  instructions, and rulesync overview with the current `src/poker/` package.
+  Added the `poker` CLI entry point and configured the PyTorch CPU wheel index.
+  Defined ownership for domain/model logic, application orchestration, CLI,
+  infrastructure, and the async I/O boundary.
+- Step 02 verification: installed Python 3.12.11 and synchronized the locked
+  environment. `poker --help`, `uv lock --check`, Ruff format check, Ruff lint,
+  and all unit tests passed. The unit suite currently contains one test. Pytest
+  settings are centralized in `pyproject.toml`; `pytest.ini` was removed.
+  Importing PyTorch reported that optional NumPy support is unavailable; the
+  CPU build loaded as `2.14.1+cpu`, and CUDA availability was false.
 
 ## Session Handoff
 
 Update these fields at the end of each implementation session:
 
-- Active step: 02 (Step 01 requirements agreed).
-- Work completed this session: recorded the user's six-max, stack, action,
-  opponent, CPU, and game-state-sourced per-player model stack inputs in the
-  roadmap. Stack inputs follow gameplay state; all six start at 100 BB.
-- Verification evidence: reviewed the resulting specification and checklist;
-  `git diff --check -- INSTRUCTION.md` passed.
-- Remaining work: align the project structure and development environment.
-- Blockers: none for requirements discussion.
-- Next action: begin Step 02 after reviewing the project structure and setup.
+- Active step: 03 (Steps 01 and 02 complete).
+- Work completed this session: updated the README, architecture guide,
+  contributing guide, rulesync overview, PyTorch CPU dependency configuration,
+  pytest configuration, and installed CLI entry point. Kept both the
+  `Get started` and `Start contributing` sections.
+- Verification evidence: `uv lock --check`, `poker --help`, Ruff formatting,
+  Ruff lint, and unit tests passed. PyTorch loaded as `2.14.1+cpu`. Pytest
+  loaded configuration from `pyproject.toml`. `git diff --check` passed.
+- Remaining work: Step 03, define typed poker states and actions.
+- Blockers: none for beginning Step 03.
+- Next action: review the state/action design requirements and existing domain
+  conventions before implementing Step 03.

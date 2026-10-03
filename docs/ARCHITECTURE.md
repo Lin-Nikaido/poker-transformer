@@ -1,102 +1,54 @@
-# ARCHITECTURE
+# Architecture
 
-## Software Architecture
+## Project structure
 
-This project consists of four layers. Dependencies always point inward (toward the Core Layer).
-Based on the Clean Architecture.
+The installable Python package is `poker`, located under `src/poker/`. The
+repository is being built as a poker AI, so the structure below describes both
+the modules that exist now and the ownership rules for modules added by the MVP.
 
-```mermaid
-graph LR
-    P[Presentation Layer]
-    A[Application Layer]
-    C[Core Layer]
-    I[Infrastructure Layer]
-
-    P -->|depends on| A
-    A -->|depends on| C
-    I -.->|implements<br/>interfaces| C
+```text
+src/poker/
+  cli/             Typer command-line boundary
+  application/     Training, inference, and evaluation use cases
+  core/            Poker domain types, rules, policy interfaces, and algorithms
+  infrastructure/ External engines, checkpoint files, and other adapters
+  config/          Configuration loading and validation
+tests/
+  unittests/       Fast isolated tests mirroring src/poker/
+  integration/     Tests across adapters and system boundaries
 ```
 
-- **Presentation Layer**
-  - Presentation I/F for other systems. like API or CLI.
-- **Application Layer**
-  - Depends on the Core Layer. Do not depend on Infrastructure Layer.
-  - The Application Layer is responsible for implementing use cases. It defines specific application behaviors using the business rules from the Core Layer.
-- **Core Layer**
-  - Do NOT depend on any other layer.
-  - The Core Layer is responsible for the heart of the business logic and defines the essential rules and behaviors of this project.
-    This layer is completely independent of technical implementation details.
-- **Infrastructure Layer**
-  - Depends on the Core Layer (Implements interfaces defined in the Core Layer)
-  - The Infrastructure Layer handles interactions with external libraries and external APIs. This layer implements concrete classes that fulfill the interfaces defined in the Core Layer.
-  - Note: The Infrastructure Layer does not depend on the Application Layer.
+## Layer responsibilities
 
+| Layer | Owns | May depend on |
+| --- | --- | --- |
+| `cli/` | Parse command-line input, call an application use case, render output | `application/`, `config/` |
+| `application/` | Coordinate training, inference, and evaluation workflows | `core/` and injected ports |
+| `core/` | Poker rules and observations, legal actions, rewards, model-independent algorithms, and port definitions | Standard library and domain-level dependencies only |
+| `infrastructure/` | Concrete game engine, storage, external service, and file adapters | `core/` |
+| `config/` | Parse and validate settings at the process boundary | Configuration libraries |
 
-## directory architecture
-```
-+-- poker-transformer/  # repo root
-+-- .github/
-+-- docs/
-+-- cli/  # CLI presentation
-|
-+-- src/  # source root
-|   +-- poker/
-|       +-- core/  # core layer
-|       |   +-- agent_runner/
-|       |   +-- agents/
-|       |   +-- ...
-|       |
-|       +-- apis/  # API presentation layer
-|       |   +-- auth/
-|       |   +-- root/
-|       |   +-- pub/
-|       |   +-- cms/
-|       |
-|       +-- application/  # application layer
-|       |   +-- analysis/
-|       |   +-- chat/
-|       |   +-- cms/
-|       |   +-- dashboard/
-|       |   +-- features/
-|       |   +-- user/
-|       |   +-- validation/
-|       |
-|       +-- infrastructure/  # infrastructure layer
-|       |   +-- database/
-|       |   +-- dataloader/
-|       |   +-- external_clients/
-|       |   +-- session_service/
-|       |
-|       +-- config/  # application config
-|       +-- exceptions/
-|       +-- task_runner/  # ECS Task runner
-|       +-- main.py  # API server entry point
-|
-+-- tests
-|   +-- data/  # for mock data
-|   +-- mockups/
-|   +-- unittests/  # Same directory architecture as `src`.
-|   +-- integration/
-|   +-- testing_util.py
-|   +-- conftest.py
-|
-+-- .gitignore
-+-- buildspec.yml
-+-- Dockerfile
-+-- pyproject.toml
-+-- README.md
-+-- uv.lock
+Dependencies point inward: command-line and infrastructure adapters connect to
+application/core contracts; domain logic does not import CLI, application, or
+infrastructure modules. PyTorch model computation belongs to the policy/model
+implementation in `core/` because it implements the policy contract. Training
+loop coordination belongs to `application/`.
 
-```
+## I/O and async boundary
 
-## Test Architecture
+All external I/O is owned by `infrastructure/` and exposed through injected
+interfaces. Database, network, and asynchronous file operations use `async def`
+and are awaited by application use cases. Do not call `asyncio.run()` from an
+async request path. CPU-bound PyTorch inference and training are synchronous
+computation; keep them out of async I/O adapters and use an explicit worker
+boundary if a future async service must invoke long-running model work.
 
-Tests follow the same boundary rule as production code: each layer should be verified at the cheapest layer that still proves the behavior.
+The current MVP is a local CLI and does not need an HTTP API, database, cloud
+service, or distributed worker. Add adapters only when a use case needs them.
 
-| Test layer | Directory | External dependency policy |
-| ---------- | --------- | -------------------------- |
-| Unit tests | `tests/unittests/` | No LocalStack, real AWS, Microsoft 365, Box, Azure, Google APIs, or repository secrets. Use `tests/mockups/`, lightweight fakes, `botocore.stub.Stubber`, or `moto`. |
-| Integration tests | `tests/integration/` | Default command includes all integration tests. LocalStack-backed profiles use LocalStack, MySQL, OpenSearch, and local Cognito. |
-| Real AWS tests | `tests/integration/` with markers | Use `pytest.mark.real_aws`; ECS dispatch tests also use `pytest.mark.ecs`. These tests are skipped automatically only when `AWS_ENDPOINT_URL` points to LocalStack. |
+## Tests
 
-This keeps the everyday development workflow fast and deterministic while preserving a place for real-cloud validation when it is intentionally requested.
+Unit tests mirror source paths under `tests/unittests/` and use fakes for ports.
+They do not depend on LocalStack, real cloud services, or repository secrets.
+Cross-boundary tests belong under `tests/integration/`. See
+`docs/CONTRIBUTING.md` for local commands.

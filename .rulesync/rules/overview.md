@@ -19,10 +19,11 @@ Poker AI transformer model develop
 
 ```
 src/poker/
-  cli/             # Typer CLI
-  application/      # Use-case orchestration (chat, analysis, cms, dashboard, features, user, validation)
-  core/             # Domain logic: agents, preprocessors, stores, types
-  infrastructure/   # External clients, DB connections, session service
+  cli/              # Typer command-line boundary
+  application/      # Training, inference, and evaluation use cases
+  core/             # Poker domain types, rules, policies, and algorithms
+  infrastructure/   # Game engine, checkpoint, and external adapters
+  config/           # Configuration loading and validation
 tests/
   unittests/        # Fast unit tests, mirroring src/ layer structure
   integration/      # End-to-end tests against real or mocked services

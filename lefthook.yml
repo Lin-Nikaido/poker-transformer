@@ -14,7 +14,7 @@ pre-commit:
 
     archgate:
       tags: architecture
-      run: uv run python scripts/run_archgate.py --staged
+      run: npx archgate check --staged
 
 pre-push:
   parallel: true
@@ -30,8 +30,8 @@ pre-push:
 
     test:
       tags: test
-      run: uv run pytest --disable-warnings -q --durations=10 -n auto --dist loadscope -m "not libreoffice" tests/unittests/
+      run: uv run pytest --disable-warnings -q --durations=10 -n auto --dist loadscope tests/unittests/
 
     archgate:
       tags: architecture
-      run: uv run python scripts/run_archgate.py --staged
+      run: npx archgate check --staged

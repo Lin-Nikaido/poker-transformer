@@ -69,7 +69,7 @@ The Step 01 MVP specification has been agreed with the user:
   for domain logic, model computation, orchestration, and external I/O, including
   the async I/O boundary. Dependencies: 01.
 
-- [ ] **03. Define typed poker states and actions.**
+- [x] **03. Define typed poker states and actions.**
   Model cards, public observations, private hands, action history, chip amounts,
   each player's stack, and actions. Include a six-seat stack input in UTG, MP,
   CO, BTN, SB, BB order, sourced from the corresponding player states. At hand
@@ -171,8 +171,8 @@ The Step 01 MVP specification has been agreed with the user:
     rule-based, and frozen-policy opponents, and a target of positive mean
     profit with a 95% confidence interval above zero over at least 20,000
     hands against the fixed rule-based opponent, repeated across seeds.
-- Implementation steps completed: 01 and 02.
-- Next step: 03, define typed poker states and actions.
+- Implementation steps completed: 01, 02, and 03.
+- Next step: 04, select and integrate a game engine.
 - Open decisions: none for the agreed MVP requirements. Validate the all-in
   sizing rule against legal game transitions in Steps 04-05.
 - Step 02 completed: aligned README, architecture guidance, contributing
@@ -186,23 +186,33 @@ The Step 01 MVP specification has been agreed with the user:
   settings are centralized in `pyproject.toml`; `pytest.ini` was removed.
   Importing PyTorch reported that optional NumPy support is unavailable; the
   CPU build loaded as `2.14.1+cpu`, and CUDA availability was false.
+- Step 03 completed: added typed cards, actions, public game state, player
+  observations, private hands, player stacks, and a six-seat stack vector in
+  UTG, MP, CO, BTN, SB, BB order. Player observations contain public state and
+  only that player's private hand. All Pydantic models use camelCase aliases,
+  allow population by field name, and are immutable. `CardRank.DEUCE` names rank
+  two. Added `StackVector.from_players()` to derive seat-ordered stacks and
+  reject missing or duplicate seats.
+- Step 03 verification: all unit tests passed (4 total), Ruff format and lint
+  passed, `uv lock --check` passed, and layer import checks passed. Pydantic was
+  added to the lock. Archgate could not run because it is not installed; the
+  automatic approval reviewer rejected installing the npm package.
 
 ## Session Handoff
 
 Update these fields at the end of each implementation session:
 
-- Active step: 03 (Steps 01 and 02 complete).
-- Work completed this session: added Step 10 for a pre-training interactive
-  `play` CLI against a random legal-action policy, and renumbered the following
-  roadmap steps. This is a roadmap update only; implementation remains at Step
-  03. Previous session work updated the README, architecture guide, contributing
-  guide, rulesync overview, PyTorch CPU dependency configuration, pytest
-  configuration, and installed CLI entry point. Kept both the `Get started`
-  and `Start contributing` sections.
-- Verification evidence: `uv lock --check`, `poker --help`, Ruff formatting,
-  Ruff lint, and unit tests passed. PyTorch loaded as `2.14.1+cpu`. Pytest
-  loaded configuration from `pyproject.toml`. `git diff --check` passed.
-- Remaining work: Step 03, define typed poker states and actions.
-- Blockers: Step 03 implementation is waiting for approval of its plan.
-- Next action: review the state/action design requirements and existing domain
-  conventions before implementing Step 03.
+- Active step: 04 (Steps 01-03 complete).
+- Work completed this session: added the pre-training interactive `play` CLI
+  roadmap step, implemented typed poker domain models and the tested seat-order
+  stack conversion, applied camelCase aliases to all models, and updated the
+  dependency lock.
+- Verification evidence: all 4 unit tests passed, Ruff format and lint passed,
+  `uv lock --check` and `git diff --check` passed, and layer import checks
+  passed.
+- Remaining work: Step 04, select and integrate a game engine.
+- Blockers: the Archgate quality check remains unrun. The automatic approval
+  reviewer rejected installing the npm package because its install scripts can
+  execute arbitrary code.
+- Next action: evaluate game engine options for Step 04. Obtain approval before
+  installing Archgate if an automated ADR check is needed for a PR.

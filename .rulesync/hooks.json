@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "matcher": "startup|resume",
+        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/scripts/init.sh"
+      }
+    ],
+    "preToolUse": [
+      {
+        "matcher": "Bash",
+        "command": "bash -c 'INPUT=$(jq -r \".tool_input.command\" <<< \"$(cat)\"); echo \"$INPUT\" | grep -qE \"rm\\s+-[a-zA-Z]*r[a-zA-Z]*f[a-zA-Z]*\\s+/\" && { echo \"BLOCKED: rm -rf / is not permitted.\" >&2; exit 2; }; echo \"$INPUT\" | grep -qE \"git (commit|push|merge|rebase).*--no-verify\" && { echo \"BLOCKED: --no-verify is not permitted.\" >&2; exit 2; }; echo \"$INPUT\" | grep -qE \"git push.+--force([^-]|$)\" && { echo \"BLOCKED: git push --force is not permitted. Use --force-with-lease instead.\" >&2; exit 2; }; exit 0'"
+      }
+    ]
+  }
+}

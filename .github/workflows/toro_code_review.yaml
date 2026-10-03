@@ -1,0 +1,15 @@
+name: TORO AI Review
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+on:
+  pull_request:
+    types: [ opened ]
+  pull_request_review_comment:
+    types: [created]
+jobs:
+  call-claude:
+    uses: tmc-ccoe/toro-claude-code/.github/workflows/toro-claude-code.yml@v1
+    secrets: inherit

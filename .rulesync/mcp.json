@@ -1,0 +1,74 @@
+{
+  "mcpServers": {
+    "shadcn": {
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ],
+      "description": "shadcn/ui registry access -- component search and metadata lookup"
+    },
+    "serena": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena",
+        "start-mcp-server",
+        "--context",
+        "ide",
+        "--project",
+        "."
+      ],
+      "description": "Semantic codebase analysis -- symbol search, go-to-definition, and reference tracing"
+    },
+    "adk-docs-mcp": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "mcpdoc",
+        "mcpdoc",
+        "--urls",
+        "AgentDevelopmentKit:https://adk.dev/llms.txt",
+        "--transport",
+        "stdio"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ],
+      "description": "Browser automation -- local web app testing, screenshots, and console log inspection"
+    },
+    "jira": {
+      "command": "uvx",
+      "args": [
+        "mcp-atlassian"
+      ],
+      "description": "Jira ticket search, retrieval, and status updates (bsizeinc.atlassian.net)"
+    },
+    "notion": {
+      "type": "http",
+      "url": "https://mcp.notion.com/mcp",
+      "description": "Notion page and database read/write - PRDs, specs, and meeting notes"
+    },
+    "figma": {
+      "type": "http",
+      "url": "https://mcp.figma.com/mcp",
+      "description": "Figma design context extraction - layout hierarchy, design tokens, Auto Layout rules, component variants"
+    },
+    "miro": {
+      "type": "http",
+      "url": "https://mcp.miro.com/",
+      "description": "Miro board reading - user flows, page transition rules, PRD, system architecture diagrams"
+    },
+    "markitdown": {
+      "command": "uvx",
+      "args": [
+        "markitdown-mcp"
+      ],
+      "description": "File-to-Markdown converter (PDF, Word, PowerPoint, Excel, HTML) -- extracts text and document structure only. Use for prose-based design specs where values are written out (e.g. 'Primary color: #2563EB'). Does NOT extract visual styling (colors, font sizes, spacing) from binary or image-based files -- use Claude Vision (Read tool) for those."
+    }
+  }
+}

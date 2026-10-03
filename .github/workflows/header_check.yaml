@@ -1,0 +1,19 @@
+name: Check Header
+on:
+  pull_request:
+
+jobs:
+  header-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10.19"
+
+      - name: Check header
+        run: python scripts/check_header.py

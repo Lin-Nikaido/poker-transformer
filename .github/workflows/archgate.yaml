@@ -1,0 +1,32 @@
+name: Architecture Check
+
+on:
+  pull_request:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  archgate:
+    name: Architecture Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install archgate
+        run: npm install -g archgate
+
+      - name: Setup Archgate config
+        run: |
+          mkdir -p .archgate
+          ln -sfn ../docs/adrs .archgate/adrs
+          ln -sfn ../docs/adrs/rules.d.ts .archgate/rules.d.ts
+
+      - name: Run archgate check
+        run: archgate check

@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: insert-header
+        name: insert python header
+        entry: python scripts/insert_header.py
+        language: system
+        files: \.py$
+        exclude: __init__\.py$

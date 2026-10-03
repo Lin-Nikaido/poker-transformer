@@ -7,9 +7,6 @@
 
 from __future__ import annotations
 
-from dataclasses import InitVar
-from dataclasses import dataclass
-from dataclasses import field
 from decimal import Decimal
 
 from pokerkit import Automation
@@ -28,14 +25,15 @@ SEATS = tuple(Seat)
 AUTOMATIONS = tuple(automation for automation in Automation)
 
 
-@dataclass(kw_only=True)
 class PokerKitHand(PokerGame):
     """Adapt one PokerKit state to the core game-session contract."""
 
-    state: InitVar[State]
-    _state: State = field(init=False, repr=False)
-
-    def __post_init__(self, state: State) -> None:
+    def __init__(
+        self,
+        *,
+        state: State,
+    ) -> None:
+        super().__init__()
         self._state = state
 
     @property

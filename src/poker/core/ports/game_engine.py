@@ -5,30 +5,38 @@
 
 """Game-engine port consumed by poker use cases."""
 
-from typing import Protocol
+from abc import ABC
+from abc import abstractmethod
 
 from poker.core.types.actions import Action
 from poker.core.types.legal_actions import LegalActions
 from poker.core.types.primitives import Seat
 
 
-class PokerGame(Protocol):
+class PokerGame(ABC):
     """A player-safe game session exposed by an engine adapter."""
 
+    @abstractmethod
+    def __init__(self, **kwargs) -> None: ...
+
     @property
+    @abstractmethod
     def acting_seat(self) -> Seat | None:
         """Return the seat that must act next, if one exists."""
         ...
 
     @property
+    @abstractmethod
     def is_terminal(self) -> bool:
         """Return whether the hand is complete."""
         ...
 
+    @abstractmethod
     def get_legal_actions(self) -> LegalActions:
         """Return legal decisions for the acting player."""
         ...
 
+    @abstractmethod
     def step(
         self,
         *,
@@ -38,9 +46,10 @@ class PokerGame(Protocol):
         ...
 
 
-class GameEngine(Protocol):
+class GameEngine(ABC):
     """Factory contract for starting one poker hand."""
 
+    @abstractmethod
     def start_hand(self) -> PokerGame:
         """Create a new hand session."""
         ...

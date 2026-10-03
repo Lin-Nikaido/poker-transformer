@@ -38,3 +38,9 @@ All I/O -- database, HTTP, external APIs, files -- must be async. FastAPI endpoi
 - Unit tests must not require LocalStack, real AWS, Microsoft 365, Box, Azure, Google APIs, or repository secrets
 - Async tests: decorate with `@pytest.mark.asyncio`
 - Format + lint before committing: `uv run ruff format src/ tests/ && uv run ruff check src/ tests/`
+
+## Architecture Decision Records
+
+| ADR | Decision |
+| --- | --- |
+| [ARCH-012](docs/adrs/ARCH-012-pokerkit-game-engine.md) | Use PokerKit behind an infrastructure adapter that implements the core game-engine port. |

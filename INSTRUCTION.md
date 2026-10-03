@@ -75,7 +75,7 @@ The Step 01 MVP specification has been agreed with the user:
   hidden-information leakage.
   Dependencies: 01, 02.
 
-- [ ] **04. Select and integrate a game engine.**
+- [x] **04. Select and integrate a game engine.**
   Evaluate reuse versus implementation and record the decision. Expose state
   transitions, legal actions, and terminal states through a consistent interface.
   Dependencies: 03.
@@ -174,10 +174,10 @@ The Step 01 MVP specification has been agreed with the user:
     rule-based, and frozen-policy opponents, and a target of positive mean
     profit with a 95% confidence interval above zero over at least 20,000
     hands against the fixed rule-based opponent, repeated across seeds.
-- Implementation steps completed: 01, 02, and 03.
-- Next step: 04, select and integrate a game engine.
-- Open decisions: none for the agreed MVP requirements. Validate the all-in
-  sizing rule against legal game transitions in Steps 04-05.
+- Implementation steps completed: 01, 02, 03, and 04.
+- Next step: 05, verify the MVP game rules against the agreed specification.
+- Open decisions: the all-in sizing rule and the interpretation of bet/raise
+  sizing amounts must be validated against legal game transitions in Step 05.
 - Step 02 completed: aligned README, architecture guidance, contributing
   instructions, and rulesync overview with the current `src/poker/` package.
   Added the `poker` CLI entry point and configured the PyTorch CPU wheel index.
@@ -191,9 +191,8 @@ The Step 01 MVP specification has been agreed with the user:
   CPU build loaded as `2.14.1+cpu`, and CUDA availability was false.
 - Step 03 completed: added typed cards, actions, per-street grouped action
   history, public game state, player observations, private hands, and player
-  stacks. `PublicPlayerState` contains
-  public fields;
-  `PlayerState` extends it with the private hand, and `get_public_state()`
+  stacks. `PublicPlayerState` contains public fields; `PlayerState` extends it
+  with the private hand, and `get_public_state()`
   returns the public base type. `TableState` revalidates player subclasses
   so private hand fields cannot pass through. Player observations contain
   public state and only the observing player's private hand. All Pydantic
@@ -204,22 +203,30 @@ The Step 01 MVP specification has been agreed with the user:
 - Step 03 verification: all unit tests passed (3 total), Ruff format and lint
   passed, `uv lock --check` and layer import checks passed. The commit hooks ran
   Archgate successfully (36 rules passed) and found no secrets.
+- Step 04 completed: selected PokerKit 0.7.6, an MIT-licensed engine that
+  supports No-Limit Texas Hold'em with six players. Added a core game-engine
+  port and a PokerKit adapter in `infrastructure/game_engine/`. The adapter
+  creates hands with 100 BB stacks, no ante, 0.5/1 BB blinds, exposes the actor,
+  legal action kinds and bet/raise bounds, applies actions, and reports terminal
+  state. Recorded the selection and layer ownership in ARCH-012. Full player
+  observations and the agreed discrete sizing policy remain for later steps.
+- Step 04 verification: all 21 unit tests passed; Ruff format and lint passed;
+  `uv lock --check` resolved 48 packages; `git diff --check` passed; Archgate
+  passed all 36 rules.
 
 ## Session Handoff
 
 Update these fields at the end of each implementation session:
 
-- Active step: 04 (Steps 01-03 complete).
-- Work completed this session: added the pre-training interactive `play` CLI
-  roadmap step, implemented typed poker domain models, public-state inheritance,
-  hand redaction, deferred standalone stack-vector modeling to Step 08, and
-  recorded the full-observation model encoder. Added the no-re-export rule to
-  `docs/CODING_RULES.md` and removed package-level type exports. Grouped public
-  action history by street. Applied camelCase aliases to all models and updated
-  the dependency lock.
-- Verification evidence: all 3 unit tests passed, Ruff format and lint passed,
-  `uv lock --check` and `git diff --check` passed, layer import checks passed,
-  and Archgate passed all 36 rules in the commit hook.
-- Remaining work: Step 04, select and integrate a game engine.
-- Blockers: none for beginning Step 04.
-- Next action: evaluate game engine options for Step 04.
+- Active step: 05 (Steps 01-04 complete).
+- Work completed this session: compared game-engine options; selected PokerKit;
+  added the core game-engine port, PokerKit adapter, legal-action contract,
+  dependency and lock entries, unit tests, ARCH-012, and architecture reference
+  rows. Updated the Step 04 acceptance status and handoff.
+- Verification evidence: all 20 unit tests passed; Ruff format and lint passed;
+  `uv lock --check`, `git diff --check`, and Archgate (36 rules) passed.
+- Remaining work: Step 05, verify betting, all-ins, hand ranking, payouts, and
+  chip conservation against the agreed rules.
+- Blockers: none for beginning Step 05.
+- Next action: add deterministic rule-verification cases around PokerKit's
+  transitions, including all-in sizing and payout accounting.

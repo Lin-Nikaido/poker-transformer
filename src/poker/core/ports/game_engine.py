@@ -9,8 +9,10 @@ from abc import ABC
 from abc import abstractmethod
 
 from poker.core.types.actions import Action
+from poker.core.types.hand_result import HandResult
 from poker.core.types.legal_actions import LegalActions
 from poker.core.types.primitives import Seat
+from poker.core.types.table import PlayerObservation
 
 
 class PokerGame(ABC):
@@ -34,6 +36,16 @@ class PokerGame(ABC):
     @abstractmethod
     def get_legal_actions(self) -> LegalActions:
         """Return legal decisions for the acting player."""
+        ...
+
+    @abstractmethod
+    def get_observation(self) -> PlayerObservation:
+        """Return the observation for the acting player only."""
+        ...
+
+    @abstractmethod
+    def get_result(self) -> HandResult:
+        """Return terminal stacks after a completed hand."""
         ...
 
     @abstractmethod

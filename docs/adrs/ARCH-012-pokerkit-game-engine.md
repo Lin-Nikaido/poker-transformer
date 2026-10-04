@@ -17,7 +17,13 @@ rules locally would increase the risk of incorrect betting and side-pot logic.
 
 Use PokerKit's predefined `NoLimitTexasHoldem` state as the concrete engine.
 Keep the engine port and its public contract in `core/`, and keep PokerKit
-configuration and state adaptation in `infrastructure/game_engine/`.
+configuration and state adaptation in `infrastructure/game_engine/`. Resolve
+discrete bet sizes into legal PokerKit targets in the adapter. For pot fraction
+`s`, the target is the actor's current street bet plus the amount to call plus
+`s` times the total pot after calling. Clamp size-based targets to the legal
+range. Convert a target at least half the actor's remaining stack into the
+maximum legal target, making the action all-in. Explicit target amounts remain
+unchanged unless the all-in threshold applies.
 
 ```python
 state = NoLimitTexasHoldem.create_state(
@@ -58,7 +64,8 @@ the MVP can collect training experience.
 - **Positive**: the project can build on a maintained, tested poker rules engine.
 - **Positive**: the core contract remains independent of PokerKit.
 - **Negative**: the adapter must translate between PokerKit values and project
-  domain types, and rule compatibility must be verified in Step 05.
+  domain types, and betting-size semantics must be verified against PokerKit
+  transitions in Step 05.
 
 ## Compliance
 
@@ -66,6 +73,7 @@ the MVP can collect training experience.
 
 - Keep PokerKit imports in `infrastructure/game_engine/`.
 - Implement the core game-engine port without importing PokerKit.
+- Convert `BetSize` values into legal target amounts in the PokerKit adapter.
 - Verify all-in transitions, hand ranking, payouts, and chip conservation in
   Step 05.
 
@@ -79,3 +87,4 @@ the MVP can collect training experience.
 - [ARCH-001](./ARCH-001-clean-architecture.md)
 - [PokerKit simulation documentation](https://pokerkit.readthedocs.io/en/stable/simulation.html)
 - [RLCard no-limit Hold'em documentation](https://rlcard.org/rlcard.games.nolimitholdem.html)
+

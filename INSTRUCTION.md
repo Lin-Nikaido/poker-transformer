@@ -177,10 +177,18 @@ The Step 01 MVP specification has been agreed with the user:
     rule-based, and frozen-policy opponents, and a target of positive mean
     profit with a 95% confidence interval above zero over at least 20,000
     hands against the fixed rule-based opponent, repeated across seeds.
-- Implementation steps completed: 01, 02, 03, and 04.
-- Next step: 05, verify the MVP game rules against the agreed specification.
-- Open decisions: the all-in sizing rule and the interpretation of bet/raise
-  sizing amounts must be validated against legal game transitions in Step 05.
+- Implementation steps completed: 01, 02, 03, and 04. Step 05 implementation
+  and checks pass, and commit `623d1ea` exists on
+  `feat/step-05-mvp-game-rules`; its pull request is still required before
+  marking it complete.
+- Next step after the Step 05 pull request: 06, define the RL environment and
+  reward contract.
+- Step 05 action-size interpretation: each pot fraction is applied to the
+  total pot after calling, then added to the actor's current street bet and
+  call amount. Size-based targets are clamped to legal bounds. A target at
+  least half of the actor's remaining stack is converted to the maximum legal
+  target, making the action all-in. Explicit target amounts are preserved
+  unless the all-in threshold applies.
 - Step 02 completed: aligned README, architecture guidance, contributing
   instructions, and rulesync overview with the current `src/poker/` package.
   Added the `poker` CLI entry point and configured the PyTorch CPU wheel index.
@@ -212,24 +220,38 @@ The Step 01 MVP specification has been agreed with the user:
   creates hands with 100 BB stacks, no ante, 0.5/1 BB blinds, exposes the actor,
   legal action kinds and bet/raise bounds, applies actions, and reports terminal
   state. Recorded the selection and layer ownership in ARCH-012. Full player
-  observations and the agreed discrete sizing policy remain for later steps.
+  observations and transformer-facing policy outputs remain for later steps.
 - Step 04 verification: all 21 unit tests passed; Ruff format and lint passed;
   `uv lock --check` resolved 48 packages; `git diff --check` passed; Archgate
   passed all 36 rules.
+- Step 05 implementation: the PokerKit adapter converts every `BetSize` value
+  into a legal target using the pot after calling. Targets at least half of the
+  actor's remaining stack become all-in. Explicit target amounts remain exact
+  below that threshold. Deterministic tests cover all six sizes, 0.8 POT as a
+  3 BB preflop raise, half-stack and larger all-in triggers, uncontested and
+  showdown payouts, main/side pots, hand ranking, and chip conservation.
+- Step 05 verification: all 18 game-engine tests and all 34 unit tests passed;
+  Ruff format and lint passed; Archgate passed all 40 rules; `git diff --check`
+  passed. Archgate required running the cached CLI through `npx` because it was
+  not on PATH.
 
 ## Session Handoff
 
 Update these fields at the end of each implementation session:
 
-- Active step: 05 (Steps 01-04 complete).
-- Work completed this session: compared game-engine options; selected PokerKit;
-  added the core game-engine port, PokerKit adapter, legal-action contract,
-  dependency and lock entries, unit tests, ARCH-012, and architecture reference
-  rows. Updated the Step 04 acceptance status and handoff.
-- Verification evidence: all 20 unit tests passed; Ruff format and lint passed;
-  `uv lock --check`, `git diff --check`, and Archgate (36 rules) passed.
-- Remaining work: Step 05, verify betting, all-ins, hand ranking, payouts, and
-  chip conservation against the agreed rules.
-- Blockers: none for beginning Step 05.
-- Next action: add deterministic rule-verification cases around PokerKit's
-  transitions, including all-in sizing and payout accounting.
+- Active step: 05 (Steps 01-04 complete; local commit created; push and pull
+  request pending).
+- Work completed this session: implemented pot-fraction action conversion and
+  the half-stack all-in rule in the PokerKit adapter; added deterministic rule,
+  payout, side-pot, and chip-conservation tests; updated ARCH-012 and its
+  architecture reference.
+- Verification evidence: all 18 game-engine tests and all 34 unit tests passed;
+  Ruff format and lint passed; Archgate passed all 40 rules; `git diff --check`
+  passed.
+- Remaining work: push `feat/step-05-mvp-game-rules`, create the draft PR, then
+  mark Step 05 complete before starting Step 06.
+- Blockers: GitHub rejected the push with HTTP 403 for `hachiya-takuya`; both
+  configured `gh` accounts have invalid tokens.
+- Next action: authenticate a GitHub account with write access to the repository,
+  then push the existing branch and create its draft PR.
+

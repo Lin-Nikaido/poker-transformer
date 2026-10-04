@@ -95,6 +95,13 @@ class PokerKitHand(PokerGame):
         legal_actions = self.get_legal_actions()
         if action.kind not in legal_actions.action_kinds:
             raise ValueError(f"Action {action.kind} is not legal")
+        if action.bet_size is not None and action.kind not in (
+            ActionKind.BET,
+            ActionKind.RAISE,
+        ):
+            raise ValueError(
+                "Bet sizes are only valid for bet and raise actions"
+            )
 
         if action.kind is ActionKind.FOLD:
             self._state.fold()
@@ -102,9 +109,55 @@ class PokerKitHand(PokerGame):
         if action.kind in (ActionKind.CHECK, ActionKind.CALL):
             self._state.check_or_call()
             return
-        if action.amount is None:
-            raise ValueError("Bet and raise actions require a target amount")
-        self._state.complete_bet_or_raise_to(Decimal(str(action.amount)))
+        target_amount = self._get_bet_or_raise_to(action=action)
+        self._state.complete_bet_or_raise_to(target_amount)
+
+    def _get_bet_or_raise_to(
+        self,
+        *,
+        action: Action,
+    ) -> Decimal:
+        if action.amount is not None and action.bet_size is not None:
+            raise ValueError(
+                "Specify either an amount or a bet size, not both"
+            )
+
+        actor_index = self._state.actor_index
+        if actor_index is None:
+            raise ValueError("There is no acting player")
+
+        if action.bet_size is None:
+            if action.amount is None:
+                raise ValueError(
+                    "Bet and raise actions require a target amount"
+                )
+            target_amount = Decimal(str(action.amount))
+        else:
+            amount_to_call = self._state.checking_or_calling_amount
+            if amount_to_call is None:
+                amount_to_call = 0
+            pot_after_call = self._state.total_pot_amount + amount_to_call
+            target_amount = (
+                self._state.bets[actor_index]
+                + amount_to_call
+                + pot_after_call * Decimal(action.bet_size.value)
+            )
+
+        legal_actions = self.get_legal_actions()
+        minimum_amount = legal_actions.minimum_bet_or_raise_to
+        maximum_amount = legal_actions.maximum_bet_or_raise_to
+        if minimum_amount is None or maximum_amount is None:
+            raise ValueError(
+                "Bet and raise actions are not currently available"
+            )
+
+        if action.bet_size is not None:
+            target_amount = max((target_amount, minimum_amount))
+            target_amount = min((target_amount, maximum_amount))
+        remaining_stack = Decimal(str(self._state.stacks[actor_index]))
+        if target_amount >= remaining_stack / Decimal("2"):
+            target_amount = maximum_amount
+        return target_amount
 
 
 class PokerKitEngine(GameEngine):
@@ -129,3 +182,4 @@ class PokerKitEngine(GameEngine):
             player_count=len(SEATS),
         )
         return PokerKitHand(state=state)
+

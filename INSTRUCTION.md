@@ -83,7 +83,7 @@ The Step 01 MVP specification has been agreed with the user:
   transitions, legal actions, and terminal states through a consistent interface.
   Dependencies: 03.
 
-- [ ] **05. Verify the MVP game rules.**
+- [x] **05. Verify the MVP game rules.**
   Test betting, raising, all-ins, hand ranking, payouts, and chip conservation
   under the agreed rules, including edge cases. Dependencies: 04.
 
@@ -177,12 +177,10 @@ The Step 01 MVP specification has been agreed with the user:
     rule-based, and frozen-policy opponents, and a target of positive mean
     profit with a 95% confidence interval above zero over at least 20,000
     hands against the fixed rule-based opponent, repeated across seeds.
-- Implementation steps completed: 01, 02, 03, and 04. Step 05 implementation
-  and checks pass, and commit `623d1ea` exists on
-  `feat/step-05-mvp-game-rules`; its pull request is still required before
-  marking it complete.
-- Next step after the Step 05 pull request: 06, define the RL environment and
-  reward contract.
+- Implementation steps completed: 01, 02, 03, 04, and 05. Step 05 is in draft
+  PR [#3](https://github.com/Lin-Nikaido/poker-transformer/pull/3) from
+  `feat/step-05-mvp-game-rules`.
+- Next step: 06, define the RL environment and reward contract.
 - Step 05 action-size interpretation: each pot fraction is applied to the
   total pot after calling, then added to the actor's current street bet and
   call amount. Size-based targets are clamped to legal bounds. A target at
@@ -239,19 +237,18 @@ The Step 01 MVP specification has been agreed with the user:
 
 Update these fields at the end of each implementation session:
 
-- Active step: 05 (Steps 01-04 complete; local commit created; push and pull
-  request pending).
+- Active step: 06 (Steps 01-05 complete; Step 05 is in draft PR #3).
 - Work completed this session: implemented pot-fraction action conversion and
   the half-stack all-in rule in the PokerKit adapter; added deterministic rule,
   payout, side-pot, and chip-conservation tests; updated ARCH-012 and its
-  architecture reference.
+  architecture reference; created draft PR #3.
 - Verification evidence: all 18 game-engine tests and all 34 unit tests passed;
   Ruff format and lint passed; Archgate passed all 40 rules; `git diff --check`
   passed.
-- Remaining work: push `feat/step-05-mvp-game-rules`, create the draft PR, then
-  mark Step 05 complete before starting Step 06.
-- Blockers: GitHub rejected the push with HTTP 403 for `hachiya-takuya`; both
-  configured `gh` accounts have invalid tokens.
-- Next action: authenticate a GitHub account with write access to the repository,
-  then push the existing branch and create its draft PR.
+- Remaining work: define and verify the RL environment and terminal reward
+  contract in Step 06, then create its pull request before starting Step 07.
+- Blockers: none. Git CLI push authentication failed, so the connected GitHub
+  integration was used to publish the Step 05 branch and PR.
+- Next action: explore the game-engine port, observation types, and appropriate
+  application/core ownership for the RL environment.
 

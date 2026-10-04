@@ -95,6 +95,57 @@ def test_start_hand_uses_agreed_six_max_configuration() -> None:
     assert legal_actions.maximum_bet_or_raise_to == Decimal("100")
 
 
+def test_observation_exposes_only_actor_cards_and_public_player_states() -> (
+    None
+):
+    hand = PokerKitEngine().start_hand()
+
+    observation = hand.get_observation()
+
+    assert observation.seat is Seat.UTG
+    assert observation.public_state.current_actor is Seat.UTG
+    assert len(observation.private_hand.cards) == 2
+    assert all(
+        not hasattr(player, "hand")
+        for player in observation.public_state.players
+    )
+    assert len(observation.public_state.players) == 6
+
+
+def test_observation_records_actions_by_street() -> None:
+    hand = PokerKitEngine().start_hand()
+
+    hand.step(action=Action(kind=ActionKind.CALL))
+    observation = hand.get_observation()
+
+    assert len(observation.public_state.action_history.preflop) == 1
+    entry = observation.public_state.action_history.preflop[0]
+    assert entry.actor is Seat.UTG
+    assert entry.action.kind is ActionKind.CALL
+
+
+def test_result_is_terminal_and_reports_stacks_in_seat_order() -> None:
+    hand = PokerKitEngine().start_hand()
+
+    with pytest.raises(ValueError, match="only when terminal"):
+        hand.get_result()
+    for _ in range(5):
+        hand.step(action=Action(kind=ActionKind.FOLD))
+
+    result = hand.get_result()
+
+    assert result.starting_stacks == (Decimal("100"),) * 6
+    assert result.final_stacks == (
+        Decimal("100"),
+        Decimal("100"),
+        Decimal("100"),
+        Decimal("100"),
+        Decimal("99.5"),
+        Decimal("100.5"),
+    )
+    assert result.initial_big_blind == Decimal("1")
+
+
 def test_legal_action_amounts_convert_integer_engine_values() -> None:
     state = NoLimitTexasHoldem.create_state(
         automations=tuple(Automation),
@@ -276,4 +327,3 @@ def test_main_and_side_pots_are_paid_to_eligible_winners() -> None:
     assert hand._state.stacks[1] == Decimal("60")
     assert hand._state.stacks[2] == Decimal("50")
     assert sum(hand._state.stacks) == Decimal("470")
-

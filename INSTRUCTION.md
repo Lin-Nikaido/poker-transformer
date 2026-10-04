@@ -87,11 +87,11 @@ The Step 01 MVP specification has been agreed with the user:
   Test betting, raising, all-ins, hand ranking, payouts, and chip conservation
   under the agreed rules, including edge cases. Dependencies: 04.
 
-- [ ] **06. Define the RL environment and reward contract.**
+- [x] **06. Define the RL environment and reward contract.**
   Expose reset, player observations, legal actions, transitions, rewards, and
   termination. Define per-player terminal chip-profit rewards and their scaling
   subject to Step 01 approval. Test reward signs, zero-sum accounting, episode
-  boundaries, and hidden-information isolation.
+  boundaries, and hidden-information isolation. Implemented in draft PR #4.
   Dependencies: 01, 04.
 
 - [ ] **07. Implement self-play experience collection.**
@@ -177,10 +177,11 @@ The Step 01 MVP specification has been agreed with the user:
     rule-based, and frozen-policy opponents, and a target of positive mean
     profit with a 95% confidence interval above zero over at least 20,000
     hands against the fixed rule-based opponent, repeated across seeds.
-- Implementation steps completed: 01, 02, 03, 04, and 05. Step 05 is in draft
-  PR [#3](https://github.com/Lin-Nikaido/poker-transformer/pull/3) from
-  `feat/step-05-mvp-game-rules`.
-- Next step: 06, define the RL environment and reward contract.
+- Implementation steps completed: 01, 02, 03, 04, 05, and 06. Step 05 is in
+  draft PR [#3](https://github.com/Lin-Nikaido/poker-transformer/pull/3), and
+  Step 06 is in draft PR
+  [#4](https://github.com/Lin-Nikaido/poker-transformer/pull/4).
+- Next step: 07, implement self-play experience collection.
 - Step 05 action-size interpretation: each pot fraction is applied to the
   total pot after calling, then added to the actor's current street bet and
   call amount. Size-based targets are clamped to legal bounds. A target at
@@ -232,23 +233,27 @@ The Step 01 MVP specification has been agreed with the user:
   Ruff format and lint passed; Archgate passed all 40 rules; `git diff --check`
   passed. Archgate required running the cached CLI through `npx` because it was
   not on PATH.
+- Step 06 implementation: added a core one-hand environment with reset/step,
+  player-specific observations, legal actions, terminal flags, and terminal-only
+  rewards. Rewards are each seat's ending stack minus starting stack, divided by
+  the initial big blind, in UTG, MP, CO, BTN, SB, BB order. Added PokerKit
+  conversion for public table state, the acting player's private hand, per-street
+  action history, and terminal stacks. Recorded core ownership in ARCH-013.
+- Step 06 verification: all 40 unit tests passed; Ruff format and lint passed;
+  Archgate passed all 36 rules; `git diff --check` passed.
 
 ## Session Handoff
 
 Update these fields at the end of each implementation session:
 
-- Active step: 06 (Steps 01-05 complete; Step 05 is in draft PR #3).
-- Work completed this session: implemented pot-fraction action conversion and
-  the half-stack all-in rule in the PokerKit adapter; added deterministic rule,
-  payout, side-pot, and chip-conservation tests; updated ARCH-012 and its
-  architecture reference; created draft PR #3.
-- Verification evidence: all 18 game-engine tests and all 34 unit tests passed;
-  Ruff format and lint passed; Archgate passed all 40 rules; `git diff --check`
-  passed.
-- Remaining work: define and verify the RL environment and terminal reward
-  contract in Step 06, then create its pull request before starting Step 07.
+- Active step: 07 (Steps 01-06 complete; Step 05 is in draft PR #3 and Step 06
+  is in draft PR #4).
+- Work completed this session: implemented the one-hand environment and
+  terminal reward contract, actor-only observation mapping, public action
+  history, and terminal stack results; added ARCH-013 and draft PR #4.
+- Verification evidence: all 40 unit tests passed; Ruff format and lint passed;
+  Archgate passed all 36 rules; `git diff --check` passed.
+- Remaining work: implement self-play experience collection in Step 07.
 - Blockers: none. Git CLI push authentication failed, so the connected GitHub
   integration was used to publish the Step 05 branch and PR.
-- Next action: explore the game-engine port, observation types, and appropriate
-  application/core ownership for the RL environment.
-
+- Next action: define the trajectory and policy interface for Step 07.

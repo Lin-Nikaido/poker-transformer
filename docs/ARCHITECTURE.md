@@ -57,4 +57,4 @@ Cross-boundary tests belong under `tests/integration/`. See
 
 | ADR | Decision |
 | --- | --- |
-| [ARCH-012](adrs/ARCH-012-pokerkit-game-engine.md) | PokerKitをゲームエンジンとして使い、接続アダプターを`infrastructure/`に置く。 |
+| [ARCH-012](adrs/ARCH-012-pokerkit-game-engine.md) | Use PokerKit as the game engine and keep its adapter in `infrastructure/`. |

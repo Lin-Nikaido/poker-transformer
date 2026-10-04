@@ -233,6 +233,7 @@ name = "poker-transformer"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "pokerkit", version = "0.7.6" },
     { name = "pydantic" },
     { name = "torch", version = "2.14.1", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
     { name = "torch", version = "2.14.1+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform != 'darwin'" },
@@ -256,6 +257,7 @@ dev = [
 requires-dist = [
     { name = "lefthook", marker = "extra == 'dev'", specifier = ">=2.1.10" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.5.1" },
+    { name = "pokerkit", specifier = ">=0.7.6,<0.8" },
     { name = "pydantic", specifier = ">=2.12,<3" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.4.2" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.25.0" },
@@ -268,6 +270,15 @@ requires-dist = [
     { name = "typer", marker = "extra == 'dev'", specifier = ">=0.27.1" },
 ]
 provides-extras = ["dev"]
+
+[[package]]
+name = "pokerkit"
+version = "0.7.6"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e3/46/8c962cfb9755d5637dfd780dcaef85df45f87057d688f209443e0dd2c8f5/pokerkit-0.7.6.tar.gz", hash = "sha256:f68e4fcc3ef8c19150c2540b69f39d24e62aa1e3ce2fe885440d0707ed62b15e", size = 110054, upload-time = "2026-09-17T22:21:36.668935Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/03/64/a74a41aed089328a66517dff1914d9601f5405774524b2b2d9dae0193b6b/pokerkit-0.7.6-py3-none-any.whl", hash = "sha256:57a77117ed702586f661649ec02755003ecef31744e65c2b9c234cb53539c338", size = 114226, upload-time = "2026-09-17T22:21:35.342012Z" },
+]
 
 [[package]]
 name = "pre-commit"

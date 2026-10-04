@@ -52,3 +52,9 @@ Unit tests mirror source paths under `tests/unittests/` and use fakes for ports.
 They do not depend on LocalStack, real cloud services, or repository secrets.
 Cross-boundary tests belong under `tests/integration/`. See
 `docs/CONTRIBUTING.md` for local commands.
+
+## Architecture Decision Records
+
+| ADR | Decision |
+| --- | --- |
+| [ARCH-012](adrs/ARCH-012-pokerkit-game-engine.md) | Use PokerKit as the game engine and keep its adapter in `infrastructure/`. |

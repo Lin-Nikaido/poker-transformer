@@ -22,7 +22,7 @@ player seating and hand lifecycle operations. `seat_player` assigns the six
 players without starting a hand. `start_hand` rotates the player-to-position
 mapping, posts blinds, deals hole cards, and activates UTG. The PokerKit game
 implementation carries stacks into each next hand and rotates the seated
-players with the button.
+players with the button. Submit player decisions through `submit_action`.
 
 Resolve discrete bet sizes in `core/` using domain values supplied by the
 adapter. For pot fraction `s`, the target is the actor's current street bet
@@ -98,5 +98,4 @@ the MVP can collect training experience.
 - [ARCH-001](./ARCH-001-clean-architecture.md)
 - [PokerKit simulation documentation](https://pokerkit.readthedocs.io/en/stable/simulation.html)
 - [RLCard no-limit Hold'em documentation](https://rlcard.org/rlcard.games.nolimitholdem.html)
-
 

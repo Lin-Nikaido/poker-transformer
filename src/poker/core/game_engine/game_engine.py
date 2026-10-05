@@ -49,11 +49,10 @@ class BasePokerGame(ABC):
         ...
 
     @abstractmethod
-    def step(
+    def submit_action(
         self,
         *,
         action: Action,
     ) -> None:
-        """Apply one legal action to the game session."""
+        """Submit one legal action to the game session."""
         ...
-

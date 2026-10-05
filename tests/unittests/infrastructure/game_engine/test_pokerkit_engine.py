@@ -134,7 +134,7 @@ def test_start_hand_posts_blinds_deals_cards_and_activates_utg() -> None:
 def test_next_hand_rotates_button_and_carries_forward_stacks() -> None:
     game = _create_hand()
     for _ in range(5):
-        game.step(action=Action(kind=ActionKind.FOLD))
+        game.submit_action(action=Action(kind=ActionKind.FOLD))
     final_stacks = tuple(Decimal(str(stack)) for stack in game._state.stacks)
 
     game.start_hand()
@@ -187,7 +187,7 @@ def test_fold_ends_hand_when_one_player_remains() -> None:
     hand = _create_hand()
 
     for _ in range(5):
-        hand.step(action=Action(kind=ActionKind.FOLD))
+        hand.submit_action(action=Action(kind=ActionKind.FOLD))
 
     assert hand.is_terminal is True
     assert hand.acting_seat is None
@@ -200,7 +200,7 @@ def test_rejects_actions_outside_the_legal_action_set() -> None:
     hand = _create_hand()
 
     with pytest.raises(ValueError, match="is not legal"):
-        hand.step(action=Action(kind=ActionKind.CHECK))
+        hand.submit_action(action=Action(kind=ActionKind.CHECK))
 
 
 @pytest.mark.parametrize("kind", (ActionKind.FOLD, ActionKind.CALL))
@@ -208,13 +208,13 @@ def test_rejects_bet_size_on_non_betting_action(kind: ActionKind) -> None:
     hand = _create_hand()
 
     with pytest.raises(ValueError, match="only valid for bet and raise"):
-        hand.step(action=Action(kind=kind, bet_size=BetSize.POT_80))
+        hand.submit_action(action=Action(kind=kind, bet_size=BetSize.POT_80))
 
 
 def test_raise_to_amount_advances_to_the_next_actor() -> None:
     hand = _create_hand()
 
-    hand.step(
+    hand.submit_action(
         action=Action(
             kind=ActionKind.RAISE,
             amount=Decimal("2"),
@@ -228,7 +228,7 @@ def test_raise_to_amount_advances_to_the_next_actor() -> None:
 def test_explicit_raise_to_amount_is_preserved() -> None:
     hand = _create_hand()
 
-    hand.step(
+    hand.submit_action(
         action=Action(kind=ActionKind.RAISE, amount=Decimal("2.25")),
     )
 
@@ -252,7 +252,7 @@ def test_pot_sizing_resolves_to_legal_preflop_raise(
 ) -> None:
     hand = _create_hand()
 
-    hand.step(
+    hand.submit_action(
         action=Action(
             kind=ActionKind.RAISE,
             bet_size=bet_size,
@@ -268,13 +268,13 @@ def test_reraise_at_or_above_half_remaining_stack_becomes_all_in(
 ) -> None:
     hand = _create_hand(starting_stacks=(Decimal("80"),) * 6)
 
-    hand.step(
+    hand.submit_action(
         action=Action(kind=ActionKind.RAISE, amount=Decimal("10")),
     )
-    hand.step(
+    hand.submit_action(
         action=Action(kind=ActionKind.RAISE, amount=Decimal("20")),
     )
-    hand.step(
+    hand.submit_action(
         action=Action(kind=ActionKind.RAISE, amount=target_amount),
     )
 
@@ -301,7 +301,7 @@ def test_showdown_awards_best_hand_and_preserves_all_chips() -> None:
             if ActionKind.CALL in legal_kinds
             else ActionKind.CHECK
         )
-        hand.step(action=Action(kind=action_kind))
+        hand.submit_action(action=Action(kind=action_kind))
 
     assert hand._state.stacks[0] == Decimal("105")
     assert sum(hand._state.stacks) == Decimal("600")
@@ -330,16 +330,19 @@ def test_main_and_side_pots_are_paid_to_eligible_winners() -> None:
         ),
     )
 
-    hand.step(action=Action(kind=ActionKind.RAISE, amount=Decimal("20")))
-    hand.step(action=Action(kind=ActionKind.RAISE, amount=Decimal("50")))
-    hand.step(action=Action(kind=ActionKind.CALL))
-    hand.step(action=Action(kind=ActionKind.FOLD))
-    hand.step(action=Action(kind=ActionKind.FOLD))
-    hand.step(action=Action(kind=ActionKind.FOLD))
+    hand.submit_action(
+        action=Action(kind=ActionKind.RAISE, amount=Decimal("20"))
+    )
+    hand.submit_action(
+        action=Action(kind=ActionKind.RAISE, amount=Decimal("50"))
+    )
+    hand.submit_action(action=Action(kind=ActionKind.CALL))
+    hand.submit_action(action=Action(kind=ActionKind.FOLD))
+    hand.submit_action(action=Action(kind=ActionKind.FOLD))
+    hand.submit_action(action=Action(kind=ActionKind.FOLD))
 
     assert hand.is_terminal is True
     assert hand._state.stacks[0] == Decimal("61.5")
     assert hand._state.stacks[1] == Decimal("60")
     assert hand._state.stacks[2] == Decimal("50")
     assert sum(hand._state.stacks) == Decimal("470")
-

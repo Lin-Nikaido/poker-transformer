@@ -168,12 +168,12 @@ class PokerKitGame(BasePokerGame):
             maximum_bet_or_raise_to=maximum_bet_or_raise_to,
         )
 
-    def step(
+    def submit_action(
         self,
         *,
         action: Action,
     ) -> None:
-        """Apply one domain action to the underlying PokerKit state."""
+        """Submit one domain action to the underlying PokerKit state."""
         if self._state is None:
             raise ValueError("Start a hand before applying actions")
         legal_actions = self.get_legal_actions()
@@ -213,4 +213,3 @@ class PokerKitGame(BasePokerGame):
             rank=CardRank(str(card.rank)),
             suit=SUITS[str(card.suit)],
         )
-

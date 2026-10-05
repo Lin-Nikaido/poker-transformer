@@ -276,4 +276,3 @@ def test_main_and_side_pots_are_paid_to_eligible_winners() -> None:
     assert hand._state.stacks[1] == Decimal("60")
     assert hand._state.stacks[2] == Decimal("50")
     assert sum(hand._state.stacks) == Decimal("470")
-

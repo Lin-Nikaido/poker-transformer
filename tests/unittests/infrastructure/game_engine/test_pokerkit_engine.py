@@ -19,37 +19,30 @@ from pokerkit import NoLimitTexasHoldem
 from poker.core.types.actions import Action
 from poker.core.types.actions import ActionKind
 from poker.core.types.actions import BetSize
+from poker.core.types.player import PlayerState
 from poker.core.types.primitives import Seat
-from poker.infrastructure.game_engine.pokerkit_engine import PokerKitEngine
-from poker.infrastructure.game_engine.pokerkit_engine import PokerKitHand
+from poker.infrastructure.game_engine.pokerkit_engine import PokerKitGame
 
 
 def _create_hand(
     *,
     starting_stacks: tuple[Decimal, ...] = (Decimal("100"),) * 6,
-) -> PokerKitHand:
-    state = NoLimitTexasHoldem.create_state(
-        automations=tuple(Automation),
-        ante_trimming_status=True,
-        raw_antes=Decimal("0"),
-        raw_blinds_or_straddles=(
-            Decimal("0"),
-            Decimal("0"),
-            Decimal("0"),
-            Decimal("0"),
-            Decimal("0.5"),
-            Decimal("1"),
-        ),
-        min_bet=Decimal("1"),
-        raw_starting_stacks=starting_stacks,
-        player_count=6,
+) -> PokerKitGame:
+    game = PokerKitGame()
+    seated_stacks = (starting_stacks[-1], *starting_stacks[:-1])
+    game.seat_player(
+        players=[
+            PlayerState(seat=seat, stack=seated_stacks[index])
+            for index, seat in enumerate(Seat)
+        ],
     )
-    return PokerKitHand(state=state)
+    game.start_hand()
+    return game
 
 
 def _set_showdown_cards(
     *,
-    hand: PokerKitHand,
+    hand: PokerKitGame,
     fixed_holes: tuple[tuple[str, str], ...],
 ) -> None:
     fixed_board = ("2d", "4d", "7h", "9s", "Jh")
@@ -78,8 +71,80 @@ def _set_showdown_cards(
     hand._state.deck_cards = deque((*scripted_cards, *remaining_cards))
 
 
+def test_seat_player_does_not_start_a_hand() -> None:
+    game = PokerKitGame()
+    players = [
+        PlayerState(seat=seat, stack=Decimal("100"))
+        for seat in reversed(tuple(Seat))
+    ]
+
+    game.seat_player(players=players)
+
+    assert game._state is None
+    assert len(game._players) == len(Seat)
+    assert tuple(player.seat for player in game._players) == tuple(Seat)
+    assert all(player.hand is None for player in game._players)
+
+
+def test_start_hand_requires_six_seated_players() -> None:
+    game = PokerKitGame()
+
+    with pytest.raises(ValueError, match="Seat players"):
+        game.start_hand()
+
+    with pytest.raises(ValueError, match="exactly six players"):
+        game.seat_player(
+            players=[
+                PlayerState(seat=seat, stack=Decimal("100"))
+                for seat in tuple(Seat)[:-1]
+            ],
+        )
+
+
+def test_active_hand_must_finish_before_next_hand_starts() -> None:
+    game = _create_hand()
+
+    with pytest.raises(ValueError, match="must finish"):
+        game.start_hand()
+
+
+def test_start_hand_posts_blinds_deals_cards_and_activates_utg() -> None:
+    starting_stacks = tuple(Decimal(str(stack)) for stack in range(100, 106))
+    game = PokerKitGame()
+    game.seat_player(
+        players=[
+            PlayerState(seat=seat, stack=starting_stacks[index])
+            for index, seat in enumerate(Seat)
+        ],
+    )
+    game.start_hand()
+
+    assert game._state.starting_stacks == [
+        *starting_stacks[1:],
+        starting_stacks[0],
+    ]
+    assert game._state.bets == [0, 0, 0, 0, Decimal("0.5"), Decimal("1")]
+    assert all(
+        player.hand is not None and len(player.hand.cards) == 2
+        for player in game._players
+    )
+    assert game.acting_seat is Seat.UTG
+
+
+def test_next_hand_rotates_button_and_carries_forward_stacks() -> None:
+    game = _create_hand()
+    for _ in range(5):
+        game.step(action=Action(kind=ActionKind.FOLD))
+    final_stacks = tuple(Decimal(str(stack)) for stack in game._state.stacks)
+
+    game.start_hand()
+
+    assert game._state.starting_stacks == [*final_stacks[1:], final_stacks[0]]
+    assert game.acting_seat is Seat.UTG
+
+
 def test_start_hand_uses_agreed_six_max_configuration() -> None:
-    hand = PokerKitEngine().start_hand()
+    hand = _create_hand()
 
     assert hand.acting_seat is Seat.UTG
     assert hand.is_terminal is False
@@ -107,7 +172,8 @@ def test_legal_action_amounts_convert_integer_engine_values() -> None:
     )
     assert isinstance(state.min_completion_betting_or_raising_to_amount, int)
     assert isinstance(state.max_completion_betting_or_raising_to_amount, int)
-    hand = PokerKitHand(state=state)
+    hand = _create_hand()
+    hand._state = state
 
     legal_actions = hand.get_legal_actions()
 
@@ -118,7 +184,7 @@ def test_legal_action_amounts_convert_integer_engine_values() -> None:
 
 
 def test_fold_ends_hand_when_one_player_remains() -> None:
-    hand = PokerKitEngine().start_hand()
+    hand = _create_hand()
 
     for _ in range(5):
         hand.step(action=Action(kind=ActionKind.FOLD))
@@ -131,7 +197,7 @@ def test_fold_ends_hand_when_one_player_remains() -> None:
 
 
 def test_rejects_actions_outside_the_legal_action_set() -> None:
-    hand = PokerKitEngine().start_hand()
+    hand = _create_hand()
 
     with pytest.raises(ValueError, match="is not legal"):
         hand.step(action=Action(kind=ActionKind.CHECK))
@@ -139,14 +205,14 @@ def test_rejects_actions_outside_the_legal_action_set() -> None:
 
 @pytest.mark.parametrize("kind", (ActionKind.FOLD, ActionKind.CALL))
 def test_rejects_bet_size_on_non_betting_action(kind: ActionKind) -> None:
-    hand = PokerKitEngine().start_hand()
+    hand = _create_hand()
 
     with pytest.raises(ValueError, match="only valid for bet and raise"):
         hand.step(action=Action(kind=kind, bet_size=BetSize.POT_80))
 
 
 def test_raise_to_amount_advances_to_the_next_actor() -> None:
-    hand = PokerKitEngine().start_hand()
+    hand = _create_hand()
 
     hand.step(
         action=Action(
@@ -160,7 +226,7 @@ def test_raise_to_amount_advances_to_the_next_actor() -> None:
 
 
 def test_explicit_raise_to_amount_is_preserved() -> None:
-    hand = PokerKitEngine().start_hand()
+    hand = _create_hand()
 
     hand.step(
         action=Action(kind=ActionKind.RAISE, amount=Decimal("2.25")),
@@ -184,7 +250,7 @@ def test_pot_sizing_resolves_to_legal_preflop_raise(
     bet_size: BetSize,
     expected_target: Decimal,
 ) -> None:
-    hand = PokerKitEngine().start_hand()
+    hand = _create_hand()
 
     hand.step(
         action=Action(
@@ -276,3 +342,4 @@ def test_main_and_side_pots_are_paid_to_eligible_winners() -> None:
     assert hand._state.stacks[1] == Decimal("60")
     assert hand._state.stacks[2] == Decimal("50")
     assert sum(hand._state.stacks) == Decimal("470")
+

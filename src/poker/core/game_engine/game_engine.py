@@ -10,14 +10,26 @@ from abc import abstractmethod
 
 from poker.core.types.actions import Action
 from poker.core.types.legal_actions import LegalActions
+from poker.core.types.player import PlayerState
 from poker.core.types.primitives import Seat
 
 
-class PokerGame(ABC):
+class BasePokerGame(ABC):
     """A player-safe game session exposed by an engine adapter."""
 
     @abstractmethod
-    def __init__(self, **kwargs) -> None: ...
+    def seat_player(
+        self,
+        *,
+        players: list[PlayerState],
+    ) -> None:
+        """Assign the supplied players to seats without starting a hand."""
+        ...
+
+    @abstractmethod
+    def start_hand(self) -> None:
+        """Advance the button and begin a hand with blinds and hole cards."""
+        ...
 
     @property
     @abstractmethod
@@ -45,11 +57,3 @@ class PokerGame(ABC):
         """Apply one legal action to the game session."""
         ...
 
-
-class GameEngine(ABC):
-    """Factory contract for starting one poker hand."""
-
-    @abstractmethod
-    def start_hand(self) -> PokerGame:
-        """Create a new hand session."""
-        ...

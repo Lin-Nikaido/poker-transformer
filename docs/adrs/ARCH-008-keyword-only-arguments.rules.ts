@@ -60,7 +60,10 @@ export default {
         for (const file of ctx.scopedFiles) {
           // Match function calls with 2+ positional arguments (very rough heuristic)
           // Example: some_func("arg1", "arg2", "arg3")
-          const matches = await ctx.grep(file, /\w+\([^)]*,\s*[^)]*,\s*[^)]*\)/)
+          const matches = await ctx.grep(
+            file,
+            /\b(?<!def )\w+\([^)]*,\s*[^)]*,\s*[^)]*\)/,
+          )
 
           for (const match of matches) {
             const callContent = match.content.trim()
@@ -164,3 +167,4 @@ export default {
     },
   },
 } satisfies RuleSet
+

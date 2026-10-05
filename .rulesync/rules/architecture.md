@@ -43,4 +43,5 @@ All I/O -- database, HTTP, external APIs, files -- must be async. FastAPI endpoi
 
 | ADR | Decision |
 | --- | --- |
-| [ARCH-012](docs/adrs/ARCH-012-pokerkit-game-engine.md) | Use PokerKit behind an infrastructure adapter that implements the core game-engine port. |
+| [ARCH-012](docs/adrs/ARCH-012-pokerkit-game-engine.md) | Keep player seating and hand lifecycle in the core game contract; adapt PokerKit in infrastructure. |
+

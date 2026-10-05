@@ -57,5 +57,6 @@ Cross-boundary tests belong under `tests/integration/`. See
 
 | ADR | Decision |
 | --- | --- |
-| [ARCH-012](adrs/ARCH-012-pokerkit-game-engine.md) | Use PokerKit as the game engine, and resolve discrete bet sizes in `core/` from domain values supplied by its adapter. |
+| [ARCH-012](adrs/ARCH-012-pokerkit-game-engine.md) | Keep seating, hand lifecycle, and bet sizing in the core game contract; adapt PokerKit in infrastructure. |
+
 

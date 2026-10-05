@@ -16,14 +16,21 @@ rules locally would increase the risk of incorrect betting and side-pot logic.
 ## Decision
 
 Use PokerKit's predefined `NoLimitTexasHoldem` state as the concrete engine.
-Keep the engine port and its public contract in `core/`, and keep PokerKit
-configuration and state adaptation in `infrastructure/game_engine/`. Resolve
-discrete bet sizes in `core/` using domain values supplied by the adapter. For
-pot fraction `s`, the target is the actor's current street bet plus the amount
-to call plus `s` times the total pot after calling. Clamp size-based targets to
-the legal range. Convert a target at least half the actor's remaining stack
-into the maximum legal target, making the action all-in. Explicit target
-amounts remain unchanged unless the all-in threshold applies.
+Keep the game contract in `core/game_engine/` and PokerKit configuration and
+state adaptation in `infrastructure/game_engine/`. The game contract owns
+player seating and hand lifecycle operations. `seat_player` assigns the six
+players without starting a hand. `start_hand` rotates the player-to-position
+mapping, posts blinds, deals hole cards, and activates UTG. The PokerKit game
+implementation carries stacks into each next hand and rotates the seated
+players with the button.
+
+Resolve discrete bet sizes in `core/` using domain values supplied by the
+adapter. For pot fraction `s`, the target is the actor's current street bet
+plus the amount to call plus `s` times the total pot after calling. Clamp
+size-based targets to the legal range. Convert a target at least half the
+actor's remaining stack into the maximum legal target, making the action
+all-in. Explicit target amounts remain unchanged unless the all-in threshold
+applies.
 
 ```python
 state = NoLimitTexasHoldem.create_state(
@@ -62,7 +69,8 @@ the MVP can collect training experience.
 ## Consequences
 
 - **Positive**: the project can build on a maintained, tested poker rules engine.
-- **Positive**: the core contract remains independent of PokerKit.
+- **Positive**: the core game contract remains independent of PokerKit and
+  exposes seating and hand-start operations on one game object.
 - **Negative**: the adapter must translate between PokerKit values and project
   domain types, and the core sizing rule must be verified against PokerKit
   transitions in Step 05.
@@ -72,7 +80,9 @@ the MVP can collect training experience.
 **Do:**
 
 - Keep PokerKit imports in `infrastructure/game_engine/`.
-- Implement the core game-engine port without importing PokerKit.
+- Keep the game contract and lifecycle operations in `core/game_engine/`.
+- Keep PokerKit state creation and adaptation in
+  `infrastructure/game_engine/`.
 - Resolve `BetSize` values into legal targets in `core/` using domain values
   supplied by the PokerKit adapter.
 - Verify all-in transitions, hand ranking, payouts, and chip conservation in
@@ -88,4 +98,5 @@ the MVP can collect training experience.
 - [ARCH-001](./ARCH-001-clean-architecture.md)
 - [PokerKit simulation documentation](https://pokerkit.readthedocs.io/en/stable/simulation.html)
 - [RLCard no-limit Hold'em documentation](https://rlcard.org/rlcard.games.nolimitholdem.html)
+
 

@@ -119,10 +119,10 @@ def test_start_hand_posts_blinds_deals_cards_and_activates_utg() -> None:
     )
     game.start_hand()
 
-    assert game._state.starting_stacks == [
+    assert game._state.starting_stacks == (
         *starting_stacks[1:],
         starting_stacks[0],
-    ]
+    )
     assert game._state.bets == [0, 0, 0, 0, Decimal("0.5"), Decimal("1")]
     assert all(
         player.hand is not None and len(player.hand.cards) == 2
@@ -139,7 +139,7 @@ def test_next_hand_rotates_button_and_carries_forward_stacks() -> None:
 
     game.start_hand()
 
-    assert game._state.starting_stacks == [*final_stacks[1:], final_stacks[0]]
+    assert game._state.starting_stacks == (*final_stacks[1:], final_stacks[0])
     assert game.acting_seat is Seat.UTG
 
 
@@ -346,3 +346,4 @@ def test_main_and_side_pots_are_paid_to_eligible_winners() -> None:
     assert hand._state.stacks[1] == Decimal("60")
     assert hand._state.stacks[2] == Decimal("50")
     assert sum(hand._state.stacks) == Decimal("470")
+

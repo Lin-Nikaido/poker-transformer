@@ -15,16 +15,21 @@ from pokerkit import NoLimitTexasHoldem
 from pokerkit.state import State
 
 from poker.core.environment.bet_sizing import resolve_bet_target
-from poker.core.game_engine.game_engine import BasePokerGame
+from poker.core.game_engine.game_engine import BaseGameEngine
 from poker.core.types.actions import Action
+from poker.core.types.actions import ActionHistory
+from poker.core.types.actions import ActionHistoryEntry
 from poker.core.types.actions import ActionKind
 from poker.core.types.cards import Card
 from poker.core.types.cards import CardRank
 from poker.core.types.cards import Hand
 from poker.core.types.cards import Suit
 from poker.core.types.legal_actions import LegalActions
-from poker.core.types.player import PlayerState
+from poker.core.types.player import PublicPlayerState
 from poker.core.types.primitives import Seat
+from poker.core.types.primitives import Street
+from poker.core.types.table import PlayerObservation
+from poker.core.types.table import TableState
 
 
 SEATS = tuple(Seat)
@@ -37,60 +42,33 @@ SUITS = {
 }
 
 
-class PokerKitGame(BasePokerGame):
-    """Run consecutive six-max Hold'em hands through PokerKit."""
+class PokerKitGameEngine(BaseGameEngine):
+    """Execute a six-max hand without owning players or rotating the button."""
 
     def __init__(self) -> None:
         self._state: State | None = None
-        self._players: list[PlayerState] = []
+        self._history = ActionHistory()
+        self._folded: set[Seat] = set()
+        self._street = Street.PREFLOP
 
-    def seat_player(
+    def start_hand(
         self,
         *,
-        players: list[PlayerState],
+        starting_stacks: tuple[Decimal, ...],
     ) -> None:
-        """Place the six players without initializing a hand."""
-        if self._state is not None:
-            raise ValueError("Players can only be seated before a hand starts")
-        if len(players) != len(SEATS):
-            raise ValueError("A six-max game requires exactly six players")
-
-        players_by_seat = {player.seat: player for player in players}
-        if len(players_by_seat) != len(SEATS):
-            raise ValueError("Each player must occupy a unique seat")
-        self._players = [
-            players_by_seat[seat].model_copy(deep=True) for seat in SEATS
-        ]
-
-    def start_hand(self) -> None:
-        """Move the button, post blinds, deal cards, and activate UTG."""
-        if not self._players:
-            raise ValueError("Seat players before starting a hand")
+        """Start exactly the supplied position order and post blinds."""
         if self._state is not None and not self.is_terminal:
             raise ValueError(
                 "The current hand must finish before starting another"
             )
 
-        players = self._players
-        if self._state is not None:
-            players = [
-                player.model_copy(
-                    update={
-                        "stack": Decimal(str(self._state.stacks[index])),
-                        "hand": None,
-                        "committed": Decimal("0"),
-                        "is_folded": False,
-                        "is_all_in": False,
-                    },
-                )
-                for index, player in enumerate(players)
-            ]
-        players = [*players[1:], players[0]]
-        self._players = [
-            player.model_copy(update={"seat": seat, "hand": None})
-            for seat, player in zip(SEATS, players, strict=True)
-        ]
-        self._state = NoLimitTexasHoldem.create_state(
+        if len(starting_stacks) != len(SEATS):
+            raise ValueError("A six-max engine requires exactly six stacks")
+        if any(
+            not stack.is_finite() or stack <= 0 for stack in starting_stacks
+        ):
+            raise ValueError("Starting stacks must be finite and positive")
+        state = NoLimitTexasHoldem.create_state(
             automations=AUTOMATIONS,
             ante_trimming_status=True,
             raw_antes=Decimal("0"),
@@ -103,18 +81,13 @@ class PokerKitGame(BasePokerGame):
                 Decimal("1"),
             ),
             min_bet=Decimal("1"),
-            raw_starting_stacks=tuple(
-                player.stack for player in self._players
-            ),
+            raw_starting_stacks=starting_stacks,
             player_count=len(SEATS),
         )
-        for index, player in enumerate(self._players):
-            player.hand = Hand(
-                cards=tuple(
-                    self._convert_card(card)
-                    for card in self._state.hole_cards[index]
-                ),
-            )
+        self._state = state
+        self._history = ActionHistory()
+        self._folded = set()
+        self._street = Street.PREFLOP
 
     @property
     def acting_seat(self) -> Seat | None:
@@ -172,40 +145,112 @@ class PokerKitGame(BasePokerGame):
         self,
         *,
         action: Action,
-    ) -> None:
+    ) -> Action:
         """Submit one domain action to the underlying PokerKit state."""
         if self._state is None:
             raise ValueError("Start a hand before applying actions")
         legal_actions = self.get_legal_actions()
         if action.kind not in legal_actions.action_kinds:
             raise ValueError(f"Action {action.kind} is not legal")
-        if action.bet_size is not None and action.kind not in (
+        if (
+            action.bet_size is not None or action.amount is not None
+        ) and action.kind not in (
             ActionKind.BET,
             ActionKind.RAISE,
         ):
             raise ValueError(
-                "Bet sizes are only valid for bet and raise actions"
+                "Amounts and bet sizes are only valid for bet and raise actions"
             )
-
-        if action.kind is ActionKind.FOLD:
-            self._state.fold()
-            return
-        if action.kind in (ActionKind.CHECK, ActionKind.CALL):
-            self._state.check_or_call()
-            return
         actor_index = self._state.actor_index
         if actor_index is None:
             raise ValueError("There is no acting player")
-        amount_to_call = self._state.checking_or_calling_amount
-        target_amount = resolve_bet_target(
-            action=action,
-            current_street_bet=Decimal(str(self._state.bets[actor_index])),
-            amount_to_call=Decimal(str(amount_to_call or 0)),
-            total_pot=Decimal(str(self._state.total_pot_amount)),
-            remaining_stack=Decimal(str(self._state.stacks[actor_index])),
-            legal_actions=legal_actions,
+        street = tuple(Street)[self._state.street_index]
+        committed = Decimal("0")
+        if action.kind is ActionKind.FOLD:
+            self._state.fold()
+            self._folded.add(SEATS[actor_index])
+            applied_action = Action(kind=action.kind)
+        elif action.kind in (ActionKind.CHECK, ActionKind.CALL):
+            committed = Decimal(
+                str(self._state.checking_or_calling_amount or 0)
+            )
+            self._state.check_or_call()
+            applied_action = Action(
+                kind=action.kind, amount=committed if committed else None
+            )
+        else:
+            current_bet = Decimal(str(self._state.bets[actor_index]))
+            target_amount = resolve_bet_target(
+                action=action,
+                current_street_bet=current_bet,
+                amount_to_call=Decimal(
+                    str(self._state.checking_or_calling_amount or 0)
+                ),
+                total_pot=Decimal(str(self._state.total_pot_amount)),
+                remaining_stack=Decimal(str(self._state.stacks[actor_index])),
+                legal_actions=legal_actions,
+            )
+            self._state.complete_bet_or_raise_to(target_amount)
+            applied_action = Action(kind=action.kind, amount=target_amount)
+        getattr(self._history, street.value).append(
+            ActionHistoryEntry(
+                actor=SEATS[actor_index],
+                action=applied_action.model_copy(deep=True),
+            ),
         )
-        self._state.complete_bet_or_raise_to(target_amount)
+        self._street = (
+            street
+            if self._state.street_index is None
+            else tuple(Street)[self._state.street_index]
+        )
+        return applied_action
+
+    def get_stacks(self) -> tuple[Decimal, ...]:
+        """Return settled or current stacks without revealing private cards."""
+        if self._state is None:
+            raise ValueError("Start a hand before reading stacks")
+        return tuple(Decimal(str(stack)) for stack in self._state.stacks)
+
+    def get_observation(self, *, seat: Seat) -> PlayerObservation:
+        """Project native state into an independent player-safe snapshot."""
+        if self._state is None or self.is_terminal:
+            raise ValueError("Observations require an active hand")
+        index = SEATS.index(seat)
+        cards = tuple(
+            self._convert_card(card) for card in self._state.hole_cards[index]
+        )
+        if len(cards) != 2:
+            raise ValueError("The player no longer has a private hand")
+        return PlayerObservation(
+            seat=seat,
+            private_hand=Hand(cards=cards),
+            public_state=TableState(
+                street=self._street,
+                pot=Decimal(str(self._state.total_pot_amount)),
+                current_actor=self.acting_seat,
+                players=tuple(
+                    PublicPlayerState(
+                        seat=position,
+                        stack=stack,
+                        committed=Decimal(
+                            str(self._state.starting_stacks[player_index])
+                        )
+                        - stack,
+                        is_folded=position in self._folded,
+                        is_all_in=stack == 0 and position not in self._folded,
+                    )
+                    for player_index, (position, stack) in enumerate(
+                        zip(SEATS, self.get_stacks(), strict=True)
+                    )
+                ),
+                community_cards=tuple(
+                    self._convert_card(card)
+                    for board in self._state.board_cards
+                    for card in board
+                ),
+                action_history=self._history.model_copy(deep=True),
+            ),
+        )
 
     @staticmethod
     def _convert_card(card: PokerKitCard) -> Card:

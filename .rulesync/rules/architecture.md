@@ -22,8 +22,8 @@ globs: ["src/**", "tests/**", "cli/**"]
 
 ```
 apis/            <- HTTP boundary: FastAPI routers, Pydantic request/response schemas
-application/     <- Use cases: orchestrate core + infra, no framework imports
-core/            <- Domain logic: agents, preprocessors, stores, model_registry, types
+application/     <- Function-only use cases: call Core methods and injected I/O ports
+core/            <- Game, players, directly held models, learning state, types and ports
 infrastructure/  <- External I/O: DB sessions, boto3 clients, third-party APIs, File systems
 ```
 
@@ -44,4 +44,11 @@ All I/O -- database, HTTP, external APIs, files -- must be async. FastAPI endpoi
 | ADR | Decision |
 | --- | --- |
 | [ARCH-012](docs/adrs/ARCH-012-pokerkit-game-engine.md) | Keep player seating and hand lifecycle in the core game contract; adapt PokerKit in infrastructure. |
+| [ARCH-013](docs/adrs/ARCH-013-game-player-and-training-ownership.md) | Keep state in Core, hold nn.Module directly in ModelPlayer, and use application functions only. |
+
+Game owns seating and rotation; BaseGameEngine executes one hand. HumanPlayer
+uses an async input port. ModelPlayer owns a reference to nn.Module and an injected
+encoder. Future SelfPlayTrainer, RolloutCollector and PPOUpdater belong in Core.
+Application has no stateful classes or mutable globals. Inject adapters explicitly
+instead of storing games or models in a global registry.
 

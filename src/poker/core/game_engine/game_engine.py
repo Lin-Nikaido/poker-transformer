@@ -7,28 +7,24 @@
 
 from abc import ABC
 from abc import abstractmethod
+from decimal import Decimal
 
 from poker.core.types.actions import Action
 from poker.core.types.legal_actions import LegalActions
-from poker.core.types.player import PlayerState
 from poker.core.types.primitives import Seat
+from poker.core.types.table import PlayerObservation
 
 
-class BasePokerGame(ABC):
-    """A player-safe game session exposed by an engine adapter."""
+class BaseGameEngine(ABC):
+    """Execute one hand independently of seating and player behavior."""
 
     @abstractmethod
-    def seat_player(
+    def start_hand(
         self,
         *,
-        players: list[PlayerState],
+        starting_stacks: tuple[Decimal, ...],
     ) -> None:
-        """Assign the supplied players to seats without starting a hand."""
-        ...
-
-    @abstractmethod
-    def start_hand(self) -> None:
-        """Advance the button and begin a hand with blinds and hole cards."""
+        """Start a hand with stacks ordered by UTG, MP, CO, BTN, SB, BB."""
         ...
 
     @property
@@ -53,6 +49,16 @@ class BasePokerGame(ABC):
         self,
         *,
         action: Action,
-    ) -> None:
-        """Submit one legal action to the game session."""
+    ) -> Action:
+        """Apply a decision and return the actual action after sizing."""
+        ...
+
+    @abstractmethod
+    def get_observation(self, *, seat: Seat) -> PlayerObservation:
+        """Return public state and only the requested player's private hand."""
+        ...
+
+    @abstractmethod
+    def get_stacks(self) -> tuple[Decimal, ...]:
+        """Return current or settled stacks in position order."""
         ...

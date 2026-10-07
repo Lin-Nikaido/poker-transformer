@@ -3,7 +3,7 @@ id: ARCH-012
 title: PokerKit as the Poker Game Engine
 domain: architecture
 status: active
-date: 2026-10-04
+date: 2026-10-08
 rules: false
 ---
 
@@ -16,13 +16,14 @@ rules locally would increase the risk of incorrect betting and side-pot logic.
 ## Decision
 
 Use PokerKit's predefined `NoLimitTexasHoldem` state as the concrete engine.
-Keep the game contract in `core/game_engine/` and PokerKit configuration and
-state adaptation in `infrastructure/game_engine/`. The game contract owns
-player seating and hand lifecycle operations. `seat_player` assigns the six
-players without starting a hand. `start_hand` rotates the player-to-position
-mapping, posts blinds, deals hole cards, and activates UTG. The PokerKit game
-implementation carries stacks into each next hand and rotates the seated
-players with the button. Submit player decisions through `submit_action`.
+Keep BaseGameEngine in `core/game_engine/` and PokerKitGameEngine configuration
+and state adaptation in `infrastructure/game_engine/`. Core Game in `core/game/`
+owns player seating and consecutive-hand lifecycle. `seat_player` assigns a
+BasePlayer to a physical seat without starting a hand. The initial hand preserves
+that position order; later hands rotate the button and carry settled stacks by
+stable player identity. The engine starts one supplied hand, posts blinds, deals
+hole cards, and executes legal decisions. It does not seat behavioral players.
+Game validates the acting identity and decision revision before submitting actions.
 
 Resolve discrete bet sizes in `core/` using domain values supplied by the
 adapter. For pot fraction `s`, the target is the actor's current street bet
@@ -80,7 +81,7 @@ the MVP can collect training experience.
 **Do:**
 
 - Keep PokerKit imports in `infrastructure/game_engine/`.
-- Keep the game contract and lifecycle operations in `core/game_engine/`.
+- Keep the engine contract in `core/game_engine/` and seating/lifecycle in `core/game/`.
 - Keep PokerKit state creation and adaptation in
   `infrastructure/game_engine/`.
 - Resolve `BetSize` values into legal targets in `core/` using domain values
@@ -92,10 +93,12 @@ the MVP can collect training experience.
 
 - Import PokerKit from `core/` or `application/`.
 - Treat the engine's native state as a player observation.
+- Own seating or button rotation inside the PokerKit adapter.
 
 ## References
 
 - [ARCH-001](./ARCH-001-clean-architecture.md)
+- [ARCH-013](./ARCH-013-game-player-and-training-ownership.md)
 - [PokerKit simulation documentation](https://pokerkit.readthedocs.io/en/stable/simulation.html)
 - [RLCard no-limit Hold'em documentation](https://rlcard.org/rlcard.games.nolimitholdem.html)
 

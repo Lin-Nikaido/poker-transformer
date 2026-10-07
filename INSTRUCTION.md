@@ -40,7 +40,27 @@ The Step 01 MVP specification has been agreed with the user:
 - Defer distributed training, a web UI, and cloud deployment until the MVP has
   been evaluated.
 
-## Session Workflow
+## Approved Architecture Refinement (2026-10-08)
+
+- Application uses functions only and owns no stateful classes or mutable globals.
+- Core Game seats BasePlayer objects and owns identity, position rotation and
+  hand lifecycle. BaseGameEngine executes one hand; PokerKitGameEngine adapts it.
+- BasePlayer has HumanPlayer and ModelPlayer implementations. ModelPlayer holds
+  `model: nn.Module` directly, with an injected observation encoder and its own
+  sampling generator. No mandatory Policy wrapper owns the module.
+- Core run_hand is shared by play and future rollout collection. Application
+  play_usecase only calls that function and passes injected observers through.
+- Future Core SelfPlayTrainer owns the learner and training counters;
+  RolloutCollector gathers learner-local experience, and PPOUpdater updates the
+  same learner.model instance. Frozen opponent weights are independent copies.
+- Planned CLI names are `learn` and `play`. Complete play uses one human and five
+  model players; a random baseline is a pre-training smoke test.
+- The first hand preserves the explicit seat order. Later hands rotate and carry
+  stacks. The six-player play session stops when a player has no chips. Training
+  and evaluation create fresh 100 BB hands at their own episode boundary.
+- See ARCH-013 for implemented contracts versus pending learning/CLI work.
+
+## Implementation Session Workflow
 
 - Read this file and the relevant project documents before starting work.
 - Use the checklist below as the canonical implementation roadmap across sessions.
@@ -233,22 +253,30 @@ The Step 01 MVP specification has been agreed with the user:
   passed. Archgate required running the cached CLI through `npx` because it was
   not on PATH.
 
+- Step 05 architecture refinement: split Core Game from the single-hand engine,
+  added stable player identities, HumanPlayer and direct-module ModelPlayer,
+  isolated player observations and applied-action history, the common Core runner,
+  and function-only play_usecase. Recorded the ownership decision in ARCH-013.
+  PPO, terminal RL rewards, the full encoder/model, checkpoints and interactive CLI
+  remain pending; the fake-input human-plus-five-model integration is implemented.
+
 ## Session Handoff
 
 Update these fields at the end of each implementation session:
 
-- Active step: 06 (Steps 01-05 complete; Step 05 is in draft PR #3).
-- Work completed this session: implemented pot-fraction action conversion and
-  the half-stack all-in rule in the PokerKit adapter; added deterministic rule,
-  payout, side-pot, and chip-conservation tests; updated ARCH-012 and its
-  architecture reference; created draft PR #3.
-- Verification evidence: all 18 game-engine tests and all 34 unit tests passed;
-  Ruff format and lint passed; Archgate passed all 40 rules; `git diff --check`
-  passed.
+- Active step: 06 (Steps 01-05 complete; Step 05 and its architecture refinement
+  are on the existing PR #3 branch).
+- Work completed this session: refactored Game/Engine ownership and behavioral
+  players on feat/step-05-mvp-game-rules; implemented direct nn.Module ownership,
+  function-only play_usecase, player-safe snapshots and shared hand execution;
+  aligned architecture ADRs and added unit/integration coverage.
+- Verification evidence: 67 unit tests and 2 integration tests passed; Ruff format
+  and lint passed; Archgate passed all 41 rules, including function-only application
+  enforcement. Existing optional NumPy initialization warning remains unchanged.
 - Remaining work: define and verify the RL environment and terminal reward
   contract in Step 06, then create its pull request before starting Step 07.
-- Blockers: none. Git CLI push authentication failed, so the connected GitHub
-  integration was used to publish the Step 05 branch and PR.
+- Blockers: publication status is recorded after local verification; do not update
+  branch contents through a GitHub API instead of pushing a local commit.
 - Next action: explore the game-engine port, observation types, and appropriate
   application/core ownership for the RL environment.
 

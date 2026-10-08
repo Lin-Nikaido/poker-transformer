@@ -23,16 +23,60 @@ tests/
 | Layer | Owns | May depend on |
 | --- | --- | --- |
 | `cli/` | Parse command-line input, call an application use case, render output | `application/`, `config/` |
-| `application/` | Coordinate training, inference, and evaluation workflows | `core/` and injected ports |
-| `core/` | Poker rules and observations, legal actions, rewards, model-independent algorithms, and port definitions | Standard library and domain-level dependencies only |
+| `application/` | Function-only use cases connecting Core methods and injected I/O ports | `core/` and injected ports |
+| `core/` | Game lifecycle, players, observations, legal actions, model computation, learning state and algorithms, and port definitions | Standard library and domain-level dependencies, including PyTorch |
 | `infrastructure/` | Concrete game engine, storage, external service, and file adapters | `core/` |
 | `config/` | Parse and validate settings at the process boundary | Configuration libraries |
 
 Dependencies point inward: command-line and infrastructure adapters connect to
 application/core contracts; domain logic does not import CLI, application, or
-infrastructure modules. PyTorch model computation belongs to the policy/model
-implementation in `core/` because it implements the policy contract. Training
-loop coordination belongs to `application/`.
+infrastructure modules. ModelPlayer directly holds its PyTorch `nn.Module` in
+`core/`. Application functions do not retain state in classes, globals, or closures.
+GameRunner and future SelfPlayTrainer/RolloutCollector/PPOUpdater objects own domain and
+learning state in Core. Application connects their methods with save/report ports.
+Inject dependencies explicitly; do not introduce shared mutable game registries.
+
+## Game and player ownership
+
+`core/game_runner/GameRunner` seats six `BasePlayer` objects and owns stable
+UUID v4 player identities, UUID v4 hand IDs, initial positions, button rotation,
+and hand revisions. A player ID is generated once per player; every new hand gets
+a fresh hand ID. `BaseGameEngine` executes a single hand;
+`infrastructure/game_engine/PokerKitGameEngine` adapts native state,
+legal actions, snapshots, and payouts. Engine and behavioral player lifecycles are
+separate. The first hand keeps its initial seating; later hands carry settled
+stacks and rotate positions. Physical table indices differ from hand positions.
+
+BasePlayer's asynchronous `select_action` validates the request, calls the
+subclass's `_select_action_impl`, and resolves bet targets in its private
+`_resolve_bet_amount` method. Observations expose each player's current
+`street_bet` separately from cumulative `committed` chips. Engines accept
+resolved target amounts and validate legal transitions without applying player
+sizing policy. Model sampling metadata retains its original action index.
+
+`HumanPlayer` awaits an injected input port. `ModelPlayer.model` is the supplied
+`nn.Module`, shared if desired by five opponents, with a separate sampling
+generator per player. Its encoder is injected and is shared with future training.
+Action selection applies a legal mask to 15 logits and preserves sampling metadata.
+`GameRunner.run_hand()` drives both player kinds and owns the sequential hand
+lifecycle. `play_usecase` is a thin asynchronous function that delegates to this method.
+Optional observers can record private player-local decisions but must not render
+those records as public game output.
+
+## Training ownership and remaining work
+
+The planned `poker learn` command calls a function-only `learn_usecase`. Core
+`SelfPlayTrainer` will hold the learner ModelPlayer and training counters;
+`RolloutCollector` will collect one current learner against five frozen opponents;
+`PPOUpdater` will update the same `learner.model` parameters. The first opponents
+are random, and later opponents use a distinct frozen copy from the previous
+epoch. Application functions handle checkpoint I/O and reporting via injected
+ports. These components, the actual encoder/Transformer/value head, terminal RL
+rewards, checkpoint handling, and the `learn`/`play` CLI are still roadmap work.
+
+The completed gameplay foundation already supports one HumanPlayer and five
+ModelPlayer objects with injected input and encoder adapters. Integration tests
+exercise that combination against PokerKit without an interactive terminal.
 
 ## I/O and async boundary
 
@@ -57,4 +101,7 @@ Cross-boundary tests belong under `tests/integration/`. See
 
 | ADR | Decision |
 | --- | --- |
-| [ARCH-012](adrs/ARCH-012-pokerkit-game-engine.md) | Use PokerKit as the game engine and keep its adapter in `infrastructure/`. |
+| [ARCH-012](adrs/ARCH-012-pokerkit-game-engine.md) | Keep seating, hand lifecycle, and bet sizing in the core game contract; adapt PokerKit in infrastructure. |
+| [ARCH-013](adrs/ARCH-013-game-player-and-training-ownership.md) | Keep GameRunner, players, and learning state in Core; directly hold models in ModelPlayer and expose function-only application use cases. |
+
+

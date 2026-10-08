@@ -79,6 +79,7 @@ Primary documents:
 ## Workflow
 
 - **Plan first**: Present an implementation plan and wait for user approval before making significant changes.
+- **Git workflow**: Before editing, confirm the local branch is the intended PR branch and is up to date with its remote tracking branch. Make and verify changes locally, review the complete diff, stage only the intended files, and create a local commit before pushing that commit. Do not update the remote branch through GitHub APIs or another path that bypasses the local commit. After pushing, verify the remote branch points to the pushed commit and confirm the local worktree is clean. If local changes or branch divergence prevent this workflow, preserve all changes and report the blocker instead of resetting, discarding, or bypassing it.
 - **Verify**: After implementation, run `uv run ruff format --check src/ tests/ && uv run ruff check src/ tests/ && uv run pytest tests/unittests/ -v`.
 - **Testing boundary**: Unit tests must not require LocalStack, real AWS, Microsoft 365, Box, Azure, Google APIs, or repository secrets. Use fakes, `botocore.stub.Stubber`, `moto`, or `tests/mockups/`.
 - **Multi-phase**: Significant tasks use `/build` (features) or `/fix` (bugs), which define phase gates and require explicit approval at each step.

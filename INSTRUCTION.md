@@ -40,7 +40,28 @@ The Step 01 MVP specification has been agreed with the user:
 - Defer distributed training, a web UI, and cloud deployment until the MVP has
   been evaluated.
 
-## Session Workflow
+## Approved Architecture Refinement (2026-10-08)
+
+- Application uses functions only and owns no stateful classes or mutable globals.
+- Core GameRunner seats BasePlayer objects and owns UUID v4 player/hand IDs,
+  position rotation and hand lifecycle. BaseGameEngine executes one hand;
+  PokerKitGameEngine adapts it.
+- BasePlayer has HumanPlayer and ModelPlayer implementations. ModelPlayer holds
+  `model: nn.Module` directly, with an injected observation encoder and its own
+  sampling generator. No mandatory Policy wrapper owns the module.
+- GameRunner.run_hand is shared by play and future rollout collection. Application
+  play_usecase only calls that method and passes injected observers through.
+- Future Core SelfPlayTrainer owns the learner and training counters;
+  RolloutCollector gathers learner-local experience, and PPOUpdater updates the
+  same learner.model instance. Frozen opponent weights are independent copies.
+- Planned CLI names are `learn` and `play`. Complete play uses one human and five
+  model players; a random baseline is a pre-training smoke test.
+- The first hand preserves the explicit seat order. Later hands rotate and carry
+  stacks. The six-player play session stops when a player has no chips. Training
+  and evaluation create fresh 100 BB hands at their own episode boundary.
+- See ARCH-013 for implemented contracts versus pending learning/CLI work.
+
+## Implementation Session Workflow
 
 - Read this file and the relevant project documents before starting work.
 - Use the checklist below as the canonical implementation roadmap across sessions.
@@ -83,7 +104,7 @@ The Step 01 MVP specification has been agreed with the user:
   transitions, legal actions, and terminal states through a consistent interface.
   Dependencies: 03.
 
-- [ ] **05. Verify the MVP game rules.**
+- [x] **05. Verify the MVP game rules.**
   Test betting, raising, all-ins, hand ranking, payouts, and chip conservation
   under the agreed rules, including edge cases. Dependencies: 04.
 
@@ -177,10 +198,17 @@ The Step 01 MVP specification has been agreed with the user:
     rule-based, and frozen-policy opponents, and a target of positive mean
     profit with a 95% confidence interval above zero over at least 20,000
     hands against the fixed rule-based opponent, repeated across seeds.
-- Implementation steps completed: 01, 02, 03, and 04.
-- Next step: 05, verify the MVP game rules against the agreed specification.
-- Open decisions: the all-in sizing rule and the interpretation of bet/raise
-  sizing amounts must be validated against legal game transitions in Step 05.
+- Implementation steps completed: 01, 02, 03, 04, and 05. Step 05 is in draft
+  PR [#3](https://github.com/Lin-Nikaido/poker-transformer/pull/3) from
+  `feat/step-05-mvp-game-rules`.
+- Next step: 06, define the RL environment and reward contract.
+- Step 05 action-size interpretation: `BasePlayer.select_action` resolves each
+  pot fraction against the total pot after calling, then adds the actor's
+  current street bet and call amount. Size-based targets are clamped to legal
+  bounds. A target at least half of the actor's remaining stack is converted
+  to the maximum legal target, making the action all-in. Explicit target
+  amounts are preserved unless the all-in threshold applies. The engine only
+  validates and applies the resolved target amount.
 - Step 02 completed: aligned README, architecture guidance, contributing
   instructions, and rulesync overview with the current `src/poker/` package.
   Added the `poker` CLI entry point and configured the PyTorch CPU wheel index.
@@ -212,24 +240,56 @@ The Step 01 MVP specification has been agreed with the user:
   creates hands with 100 BB stacks, no ante, 0.5/1 BB blinds, exposes the actor,
   legal action kinds and bet/raise bounds, applies actions, and reports terminal
   state. Recorded the selection and layer ownership in ARCH-012. Full player
-  observations and the agreed discrete sizing policy remain for later steps.
+  observations and transformer-facing policy outputs remain for later steps.
 - Step 04 verification: all 21 unit tests passed; Ruff format and lint passed;
   `uv lock --check` resolved 48 packages; `git diff --check` passed; Archgate
   passed all 36 rules.
+- Step 05 implementation: `BasePlayer.select_action` converts each `BetSize`
+  into a legal target using the pot after calling. Targets at least half of the
+  actor's remaining stack become all-in. Explicit target amounts remain exact
+  below that threshold. The PokerKit adapter validates and applies resolved
+  amounts. Deterministic tests cover all six sizes, 0.8 POT as a 3 BB preflop
+  raise, half-stack and larger all-in triggers, uncontested and showdown
+  payouts, main/side pots, hand ranking, and chip conservation.
+- Step 05 verification: all 18 game-engine tests and all 34 unit tests passed;
+  Ruff format and lint passed; Archgate passed all 40 rules; `git diff --check`
+  passed. Archgate required running the cached CLI through `npx` because it was
+  not on PATH.
+
+- Step 05 architecture refinement: split Core GameRunner from the single-hand engine,
+  added stable UUID v4 player/hand IDs, HumanPlayer and direct-module ModelPlayer,
+  isolated player observations and applied-action history, GameRunner.run_hand,
+  and function-only play_usecase. Recorded the ownership decision in ARCH-013.
+  PPO, terminal RL rewards, the full encoder/model, checkpoints and interactive CLI
+  remain pending; the mock-input human-plus-five-model integration is implemented.
+
+- Latest Step 05 refactor (`4602460`): `BasePlayer.select_action` now validates
+  the request, calls the subclass `_select_action_impl`, and resolves bet/raise
+  sizes in its private `_resolve_bet_amount` method. `PublicPlayerState.street_bet`
+  distinguishes current-street bets from cumulative `committed` chips. The
+  PokerKit engine rejects unresolved `BetSize` inputs and applies explicit
+  targets without sizing policy. Model policy traces retain the sampled action
+  index after target resolution. ADR-012, ADR-013, `docs/ARCHITECTURE.md`, and
+  `.rulesync/rules/architecture.md` record this ownership.
 
 ## Session Handoff
 
 Update these fields at the end of each implementation session:
 
-- Active step: 05 (Steps 01-04 complete).
-- Work completed this session: compared game-engine options; selected PokerKit;
-  added the core game-engine port, PokerKit adapter, legal-action contract,
-  dependency and lock entries, unit tests, ARCH-012, and architecture reference
-  rows. Updated the Step 04 acceptance status and handoff.
-- Verification evidence: all 20 unit tests passed; Ruff format and lint passed;
-  `uv lock --check`, `git diff --check`, and Archgate (36 rules) passed.
-- Remaining work: Step 05, verify betting, all-ins, hand ranking, payouts, and
-  chip conservation against the agreed rules.
-- Blockers: none for beginning Step 05.
-- Next action: add deterministic rule-verification cases around PokerKit's
-  transitions, including all-in sizing and payout accounting.
+- Active step: 06 (Steps 01-05 complete; Step 05 and its architecture refinement
+  are on the existing PR #3 branch).
+- Work completed this session: caught up on `4602460` and documented the bet-size
+  ownership change and current verification state. The earlier GameRunner/player
+  architecture and its ADRs remain in place.
+- Verification evidence: before `4602460`, 67 unit tests and 2 integration tests,
+  Ruff format/lint, and Archgate (41 rules) passed. The latest refactor has not
+  been verified in this session. `tests/unittests/core/players/test_base_player.py`
+  and `tests/integration/test_player_bet_sizing.py` are currently untracked.
+- Remaining work: define and verify the RL environment and terminal reward
+  contract in Step 06, then create its pull request before starting Step 07.
+- Blockers: publication status is recorded after local verification; do not update
+  branch contents through a GitHub API instead of pushing a local commit.
+- Next action: review and track the two new sizing tests, verify the latest
+  BasePlayer/engine refactor, then define the RL environment and terminal reward
+  contract in Step 06.
+

@@ -32,6 +32,7 @@ class PublicPlayerState(BaseModel):
     seat: Seat
     stack: ChipAmount
     committed: ChipAmount = Decimal("0")
+    street_bet: ChipAmount = Decimal("0")
     is_folded: bool = False
     is_all_in: bool = False
 

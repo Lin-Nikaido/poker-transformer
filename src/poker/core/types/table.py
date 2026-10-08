@@ -33,7 +33,7 @@ class TableState(BaseModel):
 
     street: Street
     pot: ChipAmount
-    current_actor: Seat
+    current_actor: Seat | None
     players: tuple[
         PublicPlayerState,
         PublicPlayerState,

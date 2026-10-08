@@ -229,14 +229,16 @@ If you feel the need to cheat, it is a chance to design a more beautiful system 
 
 Unit tests must run without LocalStack, real AWS, Microsoft 365, Box, Azure, Google APIs, or GitHub repository secrets. If a unit test needs an external system to be reachable, it is not a unit test.
 
+Reusable test doubles live in `tests/mockups/`. Prefix their class names with `Mock` and their pytest fixture names with `mock_`.
+
 Do this:
 
 ```python
-class FakeS3Client:
+class MockS3Client:
     def get_object(self, *, Bucket: str, Key: str):
         return {"Body": io.BytesIO(b"hello")}
 
-with patch("poker.infrastructure.dataloader.s3_dataloader.boto3.client", return_value=FakeS3Client()):
+with patch("poker.infrastructure.dataloader.s3_dataloader.boto3.client", return_value=MockS3Client()):
     content = await S3Dataloader().get_content("s3://poker-tmp/hello.txt")
 ```
 

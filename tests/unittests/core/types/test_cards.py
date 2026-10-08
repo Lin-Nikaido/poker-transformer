@@ -30,5 +30,8 @@ from poker.core.types.cards import CardRank
         (CardRank.ACE, 14),
     ],
 )
-def test_card_rank_to_num(rank: CardRank, expected: int) -> None:
+def test_card_rank_to_num(
+    rank: CardRank,
+    expected: int,
+) -> None:
     assert rank.to_num() == expected

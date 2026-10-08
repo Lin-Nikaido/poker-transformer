@@ -1,9 +1,9 @@
 ---
 id: ARCH-001
-title: 4-Layer Clean Architecture (apis / application / core / infrastructure)
+title: Clean Architecture with Injected Core Contracts
 domain: architecture
 status: active
-date: 2026-05-05
+date: 2026-10-08
 rules: true
 files:
   - 'src/**/*.py'
@@ -21,13 +21,17 @@ The `src/poker/` directory is organized into **4 layers**:
 | Layer             | Path                        | Responsibility                                                                           |
 | ----------------- | --------------------------- | ---------------------------------------------------------------------------------------- |
 | `apis/`           | `src/poker/apis/`           | HTTP boundary: FastAPI routers, Pydantic request/response schemas                        |
-| `application/`    | `src/poker/application/`    | Use-case orchestration: coordinates core + infrastructure, no framework dependencies     |
-| `core/`           | `src/poker/core/`           | Domain logic: abstract base classes, registries, agents, preprocessors, type definitions |
+| `application/`    | `src/poker/application/`    | Function-only use cases that call Core methods and injected I/O ports |
+| `core/`           | `src/poker/core/`           | GameRunner, players, model computation, learning state, types and abstract ports |
 | `infrastructure/` | `src/poker/infrastructure/` | External I/O: DB adapters, external API clients, session services                        |
 
 Dependency direction: `apis/ → application/ → core/ ← infrastructure/`
 
-`infrastructure/` registers concrete implementations into `core/` registries at startup time. `application/` and `core/` depend only on abstract interfaces resolved through the registry.
+Application use cases are functions that receive Core objects and abstract I/O
+ports explicitly. Infrastructure implements those ports. State belongs to Core
+objects or native adapter resources rather than application service instances.
+Construct concrete adapters at the process boundary and inject them. A global
+registry is not required for the local CLI. See ARCH-013 for game/player ownership.
 
 ### Auxiliary Modules
 
@@ -47,59 +51,46 @@ Works at small scale but loses control of inter-component dependencies quickly. 
 
 **Adopted because:**
 - Port (core/ ABC) + Adapter (infrastructure/ concrete class) pattern makes external system replacement straightforward
-- Registry-based DI is a lightweight DI mechanism for Python — no heavy DI framework required
+- Explicit dependency injection keeps state ownership visible without a DI framework
 - Centralizing use cases in `application/` allows unit testing completely decoupled from FastAPI
 
-## Registry Pattern (DI Mechanism)
+## Dependency Injection
 
-Registries are defined in the core layer; concrete implementations are registered at startup.
+Define replaceable contracts in Core. Pass implementations through keyword-only
+constructor or function arguments. Keep concrete infrastructure imports outside
+Core and Application. This replaces the inherited registry requirement for the
+current CLI; unrelated database, ADK, and tool registries are not project modules.
 
-| Registry                         | Defined in                      | Registered by              |
-| -------------------------------- | ------------------------------- | -------------------------- |
-| `database_registry`              | `core/database/`                | `infrastructure/database/` |
-| `store_registry`                 | `core/store/`                   | startup script             |
-| `dataloader_registry`            | `core/dataloader/`              | startup script             |
-| `preprocessor_strategy_registry` | `core/preprocessor/strategies/` | startup script             |
-| `chunker_registry`               | `core/preprocessor/chunker/`    | startup script             |
-| `agent_registry`                 | `core/agents/agent_registry.py` | startup script             |
-| `tool_registry`                  | `core/tools/tool_registry.py`   | `core/tools/*_tool.py`, `core/tools/*_tools.py`, and `core/agents/*/tools.py` modules |
-
-Tool registration follows the dedicated Tool Registry initialization pattern defined in [ARCH-013](./ARCH-013-tool-registry-pattern.md). Shared tool modules under `core/tools/` expose `initialize()` and register tools through `tool_registry` during startup. Agent-specific tool modules under `core/agents/*/tools.py` expose `initialize(prefix: str)` so tools can be registered with an agent-specific prefix.
-
-## Known Deviations
-
-See [known-deviations.md](./known-deviations.md) for the full list of accepted compromises. Key items:
-
-- Several `core/agents/*/tools.py` files import `OpenAiLlmClient` directly from `infrastructure/`. The abstract `BaseLlmClient` in `core/external_clients_interface/` exists but is not yet applied. Gradual migration to Registry injection is planned (technical debt).
-- `apis/auth/auth.py` directly imports from `infrastructure/external_clients/ms_clients/`. To be resolved in an auth middleware refactor.
+```python
+game_runner = GameRunner(engine=engine)
+result = await play_usecase(game_runner=game_runner)
+```
 
 ## Consequences
 
 - **Positive**: Each layer can be tested independently (`infrastructure/` can be replaced with `core/` ABC stubs)
-- **Positive**: Adding new DB, store, or agent, or tool requires only a registry registration
+- **Positive**: Each game can receive a separate adapter instance without global registration
 - **Negative**: New features require creating files across multiple layers (responsibility is unambiguous, but there is more boilerplate)
-- **Negative**: Registry singletons are global state; parallel tests require explicit cleanup (`registry.clear()` in teardown)
+- **Negative**: The process boundary must assemble dependencies explicitly
 
 ## Compliance
 
 **Do:**
 
-- Add new external clients in `infrastructure/external_clients/` and implement the ABC from `core/external_clients_interface/`
-- Create new DB adapters in `infrastructure/database/*_database.py` with an `initialize()` function (auto-detected)
-- Resolve dependencies in `application/` through registry functions (`get_database()`, `get_store_instance_by_name()`, etc.)
-- Add shared tools in `core/tools/*_tool.py` or `core/tools/*_tools.py` with an `initialize()` function as defined in [ARCH-013](./ARCH-013-tool-registry-pattern.md)
-- Add agent-specific tools in `core/agents/*/tools.py` with an `initialize(prefix: str)` function as defined in [ARCH-013](./ARCH-013-tool-registry-pattern.md)
+- Put concrete external adapters in infrastructure and implement their Core contracts
+- Construct adapters at the process boundary and pass them into Core objects
+- Inject Core capabilities and abstract ports into application functions
+- Keep domain and training state in Core objects, including directly held models
 
 **Don't:**
 
 - Import from `application/` or `apis/` inside `infrastructure/`
 - Import `apis/` Pydantic schemas inside `application/` (use `core/types/` instead)
-- Import concrete `infrastructure/` implementations directly inside `core/` (inject via Registry)
+- Import concrete `infrastructure/` implementations directly inside `core/` (inject through its contracts)
 - Register tools at module import time; use the Tool Registry initialization lifecycle instead
 
 ## References
 
-- [ARCH-010: Google ADK Patterns and Best Practices](./ARCH-010-google-adk-patterns.md)
-- [ARCH-013: Tool Registry and Initialization Pattern](./ARCH-013-tool-registry-pattern.md)
+- [ARCH-013: Game, Player, and Training Ownership](./ARCH-013-game-player-and-training-ownership.md)
 - [Archgate ADR guide](https://cli.archgate.dev/)
 - [.rulesync/rules/architecture.md](../../.rulesync/rules/architecture.md)

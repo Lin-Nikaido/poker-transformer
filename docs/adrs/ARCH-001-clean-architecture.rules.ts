@@ -48,7 +48,7 @@ export default {
 
     "no-core-imports-infrastructure": {
       description:
-        "core/ should not import concrete implementations from infrastructure/. Use ABCs and rely on Registry injection.",
+        "core/ should not import concrete implementations from infrastructure/. Use injected abstract contracts.",
       severity: "error",
       check: async (ctx) => {
         const matches = await ctx.grepFiles(
@@ -58,10 +58,10 @@ export default {
         for (const match of matches) {
           ctx.report.violation({
             message:
-              "core/ imports from infrastructure/ — use the abstract base class and let the Registry inject the concrete implementation",
+              "core/ imports from infrastructure/ — receive the concrete implementation through the abstract contract",
             file: match.file,
             line: match.line,
-            fix: "Replace with the BaseLlmClient / BaseDatabase / BaseStore import from core/, and inject via registry at startup",
+            fix: "Import the abstract contract from core/ and inject its implementation at startup",
           });
         }
       },

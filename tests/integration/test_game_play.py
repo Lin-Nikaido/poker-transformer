@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 
 from poker.application.play.play_usecase import play_usecase
-from poker.core.game.game import Game
+from poker.core.game_runner.game_runner import GameRunner
 from poker.core.players.human_player import HumanPlayer
 from poker.core.players.model_player import ModelPlayer
 from poker.core.types.primitives import Seat
@@ -19,7 +19,7 @@ async def test_human_and_five_models_share_engine_and_preserve_identity_across_h
     fold_input: FoldInput, recorder: Recorder, stub_encoder: StubEncoder
 ) -> None:
     model = FoldModel().eval()
-    game = Game(engine=PokerKitGameEngine())
+    game = GameRunner(engine=PokerKitGameEngine())
     game.seat_player(
         player=HumanPlayer(player_id="human", action_source=fold_input),
         table_seat=0,
@@ -36,7 +36,7 @@ async def test_human_and_five_models_share_engine_and_preserve_identity_across_h
         )
     recorder = recorder
 
-    first = await play_usecase(game=game, observer=recorder)
+    first = await play_usecase(game_runner=game, observer=recorder)
     assert first.players[5].net_profit == Decimal("0.5")
     assert recorder.decisions[0][1].policy_trace is None
     assert all(
@@ -49,7 +49,7 @@ async def test_human_and_five_models_share_engine_and_preserve_identity_across_h
         for player in request.observation.public_state.players
     )
 
-    second = await play_usecase(game=game)
+    second = await play_usecase(game_runner=game)
     assert second.hand_id == 2
     assert second.players[0].player_id == "model-1"
     assert second.players[5].player_id == "human"

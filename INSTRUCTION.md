@@ -43,13 +43,13 @@ The Step 01 MVP specification has been agreed with the user:
 ## Approved Architecture Refinement (2026-10-08)
 
 - Application uses functions only and owns no stateful classes or mutable globals.
-- Core Game seats BasePlayer objects and owns identity, position rotation and
+- Core GameRunner seats BasePlayer objects and owns identity, position rotation and
   hand lifecycle. BaseGameEngine executes one hand; PokerKitGameEngine adapts it.
 - BasePlayer has HumanPlayer and ModelPlayer implementations. ModelPlayer holds
   `model: nn.Module` directly, with an injected observation encoder and its own
   sampling generator. No mandatory Policy wrapper owns the module.
-- Core run_hand is shared by play and future rollout collection. Application
-  play_usecase only calls that function and passes injected observers through.
+- GameRunner.run_hand is shared by play and future rollout collection. Application
+  play_usecase only calls that method and passes injected observers through.
 - Future Core SelfPlayTrainer owns the learner and training counters;
   RolloutCollector gathers learner-local experience, and PPOUpdater updates the
   same learner.model instance. Frozen opponent weights are independent copies.
@@ -253,9 +253,9 @@ The Step 01 MVP specification has been agreed with the user:
   passed. Archgate required running the cached CLI through `npx` because it was
   not on PATH.
 
-- Step 05 architecture refinement: split Core Game from the single-hand engine,
+- Step 05 architecture refinement: split Core GameRunner from the single-hand engine,
   added stable player identities, HumanPlayer and direct-module ModelPlayer,
-  isolated player observations and applied-action history, the common Core runner,
+  isolated player observations and applied-action history, GameRunner.run_hand,
   and function-only play_usecase. Recorded the ownership decision in ARCH-013.
   PPO, terminal RL rewards, the full encoder/model, checkpoints and interactive CLI
   remain pending; the fake-input human-plus-five-model integration is implemented.
@@ -266,7 +266,7 @@ Update these fields at the end of each implementation session:
 
 - Active step: 06 (Steps 01-05 complete; Step 05 and its architecture refinement
   are on the existing PR #3 branch).
-- Work completed this session: refactored Game/Engine ownership and behavioral
+- Work completed this session: refactored GameRunner/Engine ownership and behavioral
   players on feat/step-05-mvp-game-rules; implemented direct nn.Module ownership,
   function-only play_usecase, player-safe snapshots and shared hand execution;
   aligned architecture ADRs and added unit/integration coverage.

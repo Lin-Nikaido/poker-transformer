@@ -165,7 +165,6 @@ class PokerKitGameEngine(BaseGameEngine):
         if actor_index is None:
             raise ValueError("There is no acting player")
         street = tuple(Street)[self._state.street_index]
-        committed = Decimal("0")
         if action.kind is ActionKind.FOLD:
             self._state.fold()
             self._folded.add(SEATS[actor_index])

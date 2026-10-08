@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from poker.application.play.play_usecase import play_usecase
-from poker.core.game.game import Game
+from poker.core.game_runner.game_runner import GameRunner
 from poker.core.ports.game_observer import BaseGameObserver
 from poker.core.types.game import HandResult
 from poker.core.types.game import PlayerHandResult
@@ -17,7 +17,7 @@ async def test_play_usecase_propagates_core_result(
     fake_engine: FakeEngine,
     recorder: BaseGameObserver,
 ) -> None:
-    game = Game(engine=fake_engine)
+    game = GameRunner(engine=fake_engine)
     expected_output = HandResult(
         hand_id=1,
         players=tuple(
@@ -35,7 +35,7 @@ async def test_play_usecase_propagates_core_result(
         "run_hand",
         new=AsyncMock(return_value=expected_output),
     ) as run_hand:
-        result = await play_usecase(game=game, observer=recorder)
+        result = await play_usecase(game_runner=game, observer=recorder)
 
     assert result is expected_output
     run_hand.assert_awaited_once_with(observer=recorder)
@@ -46,8 +46,8 @@ async def test_play_usecase_propagates_core_failure(
     fake_engine: FakeEngine,
 ) -> None:
     failure = ValueError("Game cannot start")
-    game = Game(engine=fake_engine)
+    game = GameRunner(engine=fake_engine)
     with patch.object(game, "run_hand", new=AsyncMock(side_effect=failure)):
         with pytest.raises(ValueError) as caught:
-            await play_usecase(game=game)
+            await play_usecase(game_runner=game)
     assert caught.value is failure

@@ -13,7 +13,7 @@ claudecode:
 # Role
 
 For poker ownership review, enforce ARCH-013: application use cases are functions;
-Core Game owns seating, hand lifecycle, and run_hand execution; Core owns players and
+Core GameRunner owns seating, hand lifecycle, and run_hand execution; Core owns players and
 learning state; ModelPlayer directly holds nn.Module.
 Verify stable player identities across rotating positions and keep private observer
 records out of public output. Do not require inherited ADK/registry patterns for

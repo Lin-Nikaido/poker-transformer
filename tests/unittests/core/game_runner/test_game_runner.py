@@ -2,7 +2,7 @@ from decimal import Decimal
 
 import pytest
 
-from poker.core.game.game import Game
+from poker.core.game_runner.game_runner import GameRunner
 from poker.core.types.actions import Action
 from poker.core.types.actions import ActionKind
 from poker.core.types.primitives import Seat
@@ -25,7 +25,7 @@ def test_game_seats_players_without_starting_or_rotating_first_hand(
     assert game.get_player(seat=Seat.BTN).player_id == "player-3"
 
 
-def finish_hand(*, game: Game) -> None:
+def finish_hand(*, game: GameRunner) -> None:
     for _ in range(5):
         request = game.get_decision_request()
         assert request is not None
@@ -65,7 +65,7 @@ def test_next_hand_rotates_players_and_carries_profit_by_identity(
 def test_rejects_duplicate_seats_and_identities_without_changing_roster(
     fake_engine: FakeEngine,
 ) -> None:
-    game = Game(engine=fake_engine)
+    game = GameRunner(engine=fake_engine)
     game.seat_player(player=ScriptedPlayer(player_id="one"), table_seat=0)
     with pytest.raises(ValueError, match="unique table seat"):
         game.seat_player(player=ScriptedPlayer(player_id="two"), table_seat=0)
@@ -133,7 +133,7 @@ def test_rejects_wrong_identity_and_previous_hand_requests(
 def test_rejects_invalid_initial_stacks(
     stack: Decimal, fake_engine: FakeEngine
 ) -> None:
-    game = Game(engine=fake_engine)
+    game = GameRunner(engine=fake_engine)
     with pytest.raises(ValueError, match="finite and positive"):
         game.seat_player(
             player=ScriptedPlayer(player_id="one"), table_seat=0, stack=stack

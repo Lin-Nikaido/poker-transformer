@@ -1,6 +1,6 @@
 ---
 id: ARCH-013
-title: Core Game and Player Ownership with Function-only Use Cases
+title: Core GameRunner and Player Ownership with Function-only Use Cases
 domain: architecture
 status: active
 date: 2026-10-08
@@ -18,10 +18,10 @@ requires ModelPlayer to hold a PyTorch nn.Module directly.
 
 ## Decision
 
-Core Game owns a six-player roster, stable player identities, hand revisions,
+Core GameRunner owns a six-player roster, stable player identities, hand revisions,
 position rotation, and consecutive-hand lifecycle. BaseGameEngine defines the
 single-hand execution contract; PokerKitGameEngine implements it in infrastructure.
-The engine owns native cards, stacks, legal transitions, and payouts. Game reads
+The engine owns native cards, stacks, legal transitions, and payouts. GameRunner reads
 snapshots through that contract rather than duplicating native rules.
 
 BasePlayer defines asynchronous select_action. HumanPlayer uses an injected
@@ -37,19 +37,19 @@ player = ModelPlayer(
     encoder=encoder,
     seed=42,
 )
-game.seat_player(player=player, table_seat=0)
+game_runner.seat_player(player=player, table_seat=0)
 ```
 
 Application contains use-case functions only. Inject Core objects and I/O ports
 through keyword arguments. Do not retain state in application classes, global
 variables, or closures. Function-local references to returned progress are allowed.
-Game.run_hand is the common sequential execution method used by play_usecase
-and future rollout collection. The Game that owns the roster and hand lifecycle
+GameRunner.run_hand is the common sequential execution method used by play_usecase
+and future rollout collection. The GameRunner that owns the roster and hand lifecycle
 also drives each seated player's action selection.
 
 ```python
-async def play_usecase(*, game: Game) -> HandResult:
-    return await game.run_hand()
+async def play_usecase(*, game_runner: GameRunner) -> HandResult:
+    return await game_runner.run_hand()
 ```
 
 For later learning steps, Core SelfPlayTrainer will hold the learner ModelPlayer,
@@ -65,7 +65,7 @@ The initial hand preserves explicitly assigned positions. Subsequent hands rotat
 positions and carry settled stacks by PlayerId. Table seats are physical indices;
 Seat represents UTG/MP/CO/BTN/SB/BB positions. A six-player session stops when a
 player has no chips. Learning will create fresh 100 BB hands rather than making
-automatic replenishment a universal Game rule.
+automatic replenishment a universal GameRunner rule.
 
 The current ModelPlayer adapter expects a one-dimensional Tensor with 15 logits:
 fold, check, call, six bets, six raises. The injected encoder remains a port; the
@@ -81,8 +81,8 @@ remain function-only.
 
 **Alternative: a standalone Core run_hand function**
 It makes the hand-lifecycle owner an implicit argument to a function. Keeping
-execution on Game makes the roster, current hand, and player action loop one
-cohesive domain capability. Game only coordinates player decisions; rollout
+execution on GameRunner makes the roster, current hand, and player action loop one
+cohesive domain capability. GameRunner only coordinates player decisions; rollout
 collection and PPO optimization remain separate learning responsibilities.
 
 **Alternative: a mandatory Policy object between Player and Module**
@@ -94,7 +94,7 @@ ModelPlayer performs the inference adaptation around its directly held module.
 - Positive: human and model players share one game and engine contract.
 - Positive: native rules remain in PokerKit; unit tests can inject isolated engines.
 - Positive: shared weights do not imply shared identity or sampling generators.
-- Negative: BasePokerGame/PokerKitGame callers must migrate to Game/BaseGameEngine/
+- Negative: BasePokerGame/PokerKitGame callers must migrate to GameRunner/BaseGameEngine/
   PokerKitGameEngine. This is an intentional internal API change before release.
 - Negative: learning must preserve the inference action order and add the PPO
   value/trajectory contract explicitly in later steps.
@@ -103,7 +103,7 @@ ModelPlayer performs the inference adaptation around its directly held module.
 
 **Do:**
 
-- Keep Game, players, and future stateful learning components in Core.
+- Keep GameRunner, players, and future stateful learning components in Core.
 - Use function-only application entry points and inject dependencies.
 - Keep PokerKit imports in infrastructure and PyTorch computation in Core.
 - Pass only player-local observation snapshots to Player implementations.

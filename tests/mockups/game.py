@@ -6,8 +6,8 @@ from decimal import Decimal
 
 import pytest
 
-from poker.core.game.game import Game
 from poker.core.game_engine.base_game_engine import BaseGameEngine
+from poker.core.game_runner.game_runner import GameRunner
 from poker.core.players.base_player import BasePlayer
 from poker.core.types.actions import Action
 from poker.core.types.actions import ActionHistory
@@ -102,8 +102,8 @@ class FakeEngine(BaseGameEngine):
         return action
 
 
-def make_game(*, engine: BaseGameEngine) -> Game:
-    game = Game(engine=engine)
+def make_game(*, engine: BaseGameEngine) -> GameRunner:
+    game = GameRunner(engine=engine)
     for index in range(6):
         game.seat_player(
             player=ScriptedPlayer(player_id=f"player-{index}"),

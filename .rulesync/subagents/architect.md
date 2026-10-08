@@ -127,6 +127,6 @@ Explain choices. Flag candidates for new ADRs explicitly.
 - **No cross-layer imports**: `core/` must not import from `infrastructure/`; `apis/` must go through `application/`.
 - **Async-first**: All I/O-touching code must be `async def`.
 - **No bare `Any`**: Use proper Python type hints at all layer boundaries.
-- **ARCH-013 ownership**: Application uses functions only. Core owns Game, players,
+- **ARCH-013 ownership**: Application uses functions only. Core owns GameRunner, players,
   and future training state. ModelPlayer directly holds nn.Module; inject adapters
   through Core contracts without a mandatory Policy wrapper or mutable registry.

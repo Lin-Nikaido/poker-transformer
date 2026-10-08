@@ -17,13 +17,15 @@ rules locally would increase the risk of incorrect betting and side-pot logic.
 
 Use PokerKit's predefined `NoLimitTexasHoldem` state as the concrete engine.
 Keep BaseGameEngine in `core/game_engine/` and PokerKitGameEngine configuration
-and state adaptation in `infrastructure/game_engine/`. Core Game in `core/game/`
-owns player seating and consecutive-hand lifecycle. `seat_player` assigns a
+and state adaptation in `infrastructure/game_engine/`. Core GameRunner in
+`core/game_runner/` owns player seating and consecutive-hand lifecycle.
+`seat_player` assigns a
 BasePlayer to a physical seat without starting a hand. The initial hand preserves
 that position order; later hands rotate the button and carry settled stacks by
 stable player identity. The engine starts one supplied hand, posts blinds, deals
 hole cards, and executes legal decisions. It does not seat behavioral players.
-Game validates the acting identity and decision revision before submitting actions.
+GameRunner validates the acting identity and decision revision before
+submitting actions.
 
 Resolve discrete bet sizes in `core/` using domain values supplied by the
 adapter. For pot fraction `s`, the target is the actor's current street bet
@@ -81,7 +83,8 @@ the MVP can collect training experience.
 **Do:**
 
 - Keep PokerKit imports in `infrastructure/game_engine/`.
-- Keep the engine contract in `core/game_engine/` and seating/lifecycle in `core/game/`.
+- Keep the engine contract in `core/game_engine/` and seating/lifecycle in
+  `core/game_runner/`.
 - Keep PokerKit state creation and adaptation in
   `infrastructure/game_engine/`.
 - Resolve `BetSize` values into legal targets in `core/` using domain values

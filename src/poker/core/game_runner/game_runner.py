@@ -12,7 +12,7 @@ from poker.core.types.game import PlayerHandResult
 from poker.core.types.primitives import Seat
 
 
-class Game:
+class GameRunner:
     """Own seating, position rotation, and consecutive hand lifecycles."""
 
     def __init__(self, *, engine: BaseGameEngine) -> None:

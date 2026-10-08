@@ -22,7 +22,7 @@ The `src/poker/` directory is organized into **4 layers**:
 | ----------------- | --------------------------- | ---------------------------------------------------------------------------------------- |
 | `apis/`           | `src/poker/apis/`           | HTTP boundary: FastAPI routers, Pydantic request/response schemas                        |
 | `application/`    | `src/poker/application/`    | Function-only use cases that call Core methods and injected I/O ports |
-| `core/`           | `src/poker/core/`           | Game, players, model computation, learning state, types and abstract ports |
+| `core/`           | `src/poker/core/`           | GameRunner, players, model computation, learning state, types and abstract ports |
 | `infrastructure/` | `src/poker/infrastructure/` | External I/O: DB adapters, external API clients, session services                        |
 
 Dependency direction: `apis/ → application/ → core/ ← infrastructure/`
@@ -62,8 +62,8 @@ Core and Application. This replaces the inherited registry requirement for the
 current CLI; unrelated database, ADK, and tool registries are not project modules.
 
 ```python
-game = Game(engine=engine)
-result = await play_usecase(game=game)
+game_runner = GameRunner(engine=engine)
+result = await play_usecase(game_runner=game_runner)
 ```
 
 ## Consequences

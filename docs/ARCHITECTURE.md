@@ -32,14 +32,14 @@ Dependencies point inward: command-line and infrastructure adapters connect to
 application/core contracts; domain logic does not import CLI, application, or
 infrastructure modules. ModelPlayer directly holds its PyTorch `nn.Module` in
 `core/`. Application functions do not retain state in classes, globals, or closures.
-Game and future SelfPlayTrainer/RolloutCollector/PPOUpdater objects own domain and
+GameRunner and future SelfPlayTrainer/RolloutCollector/PPOUpdater objects own domain and
 learning state in Core. Application connects their methods with save/report ports.
 Inject dependencies explicitly; do not introduce shared mutable game registries.
 
 ## Game and player ownership
 
-`core/game/Game` seats six `BasePlayer` objects and owns stable identities, initial
-positions, later button rotation, and hand revisions. `BaseGameEngine` executes a
+`core/game_runner/GameRunner` seats six `BasePlayer` objects and owns stable
+identities, initial positions, later button rotation, and hand revisions. `BaseGameEngine` executes a
 single hand; `infrastructure/game_engine/PokerKitGameEngine` adapts native state,
 legal actions, snapshots, and payouts. Engine and behavioral player lifecycles are
 separate. The first hand keeps its initial seating; later hands carry settled
@@ -49,7 +49,8 @@ stacks and rotate positions. Physical table indices differ from hand positions.
 `nn.Module`, shared if desired by five opponents, with a separate sampling
 generator per player. Its encoder is injected and is shared with future training.
 Action selection applies a legal mask to 15 logits and preserves sampling metadata.
-`Game.run_hand()` drives both player kinds and owns the sequential hand lifecycle.
+`GameRunner.run_hand()` drives both player kinds and owns the sequential hand
+lifecycle.
 `play_usecase` is a thin asynchronous function that delegates to this method.
 Optional observers can record private player-local decisions but must not render
 those records as public game output.
@@ -93,6 +94,6 @@ Cross-boundary tests belong under `tests/integration/`. See
 | ADR | Decision |
 | --- | --- |
 | [ARCH-012](adrs/ARCH-012-pokerkit-game-engine.md) | Keep seating, hand lifecycle, and bet sizing in the core game contract; adapt PokerKit in infrastructure. |
-| [ARCH-013](adrs/ARCH-013-game-player-and-training-ownership.md) | Keep Game, players, and learning state in Core; directly hold models in ModelPlayer and expose function-only application use cases. |
+| [ARCH-013](adrs/ARCH-013-game-player-and-training-ownership.md) | Keep GameRunner, players, and learning state in Core; directly hold models in ModelPlayer and expose function-only application use cases. |
 
 

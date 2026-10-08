@@ -122,7 +122,7 @@ with pytest.raises(ExternalServiceError):
 uv run pytest tests/unittests/path/to/test_file.py -v
 
 # Full unit suite
-uv run pytest tests/unittests/ -n auto --dist loadscope -m "not libreoffice" -v
+uv run pytest tests/unittests/ -n auto --dist loadscope -v
 
 # With coverage
 uv run pytest tests/unittests/ --cov=src/poker --cov-report=term-missing

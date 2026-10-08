@@ -1,6 +1,7 @@
 """Hand results attributed to stable player identities."""
 
 from decimal import Decimal
+from uuid import UUID
 
 from pydantic import BaseModel
 from pydantic import ConfigDict
@@ -20,7 +21,7 @@ class PlayerHandResult(BaseModel):
         populate_by_name=True,
     )
 
-    player_id: str = Field(min_length=1)
+    player_id: UUID
     seat: Seat
     starting_stack: ChipAmount
     final_stack: ChipAmount
@@ -40,5 +41,5 @@ class HandResult(BaseModel):
         populate_by_name=True,
     )
 
-    hand_id: int = Field(ge=1)
+    hand_id: UUID
     players: tuple[PlayerHandResult, ...] = Field(min_length=6, max_length=6)

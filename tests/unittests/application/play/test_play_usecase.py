@@ -10,6 +10,7 @@ from poker.core.types.game import HandResult
 from poker.core.types.game import PlayerHandResult
 from poker.core.types.primitives import Seat
 from tests.mockups.game import MockGameEngine
+from tests.mockups.ids import mock_uuid
 
 
 @pytest.mark.asyncio
@@ -19,10 +20,10 @@ async def test_play_usecase_propagates_core_result(
 ) -> None:
     game = GameRunner(engine=mock_game_engine)
     expected_output = HandResult(
-        hand_id=1,
+        hand_id=mock_uuid(100),
         players=tuple(
             PlayerHandResult(
-                player_id=f"player-{index}",
+                player_id=mock_uuid(index),
                 seat=seat,
                 starting_stack=100,
                 final_stack=100,

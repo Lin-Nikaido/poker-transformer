@@ -1,5 +1,7 @@
 """Player decisions and reproducible decision requests."""
 
+from uuid import UUID
+
 from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
@@ -19,8 +21,8 @@ class DecisionRequest(BaseModel):
         populate_by_name=True,
     )
 
-    player_id: str = Field(min_length=1)
-    hand_id: int = Field(ge=1)
+    player_id: UUID
+    hand_id: UUID
     revision: int = Field(ge=0)
     observation: PlayerObservation
     legal_actions: LegalActions

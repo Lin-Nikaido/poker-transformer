@@ -29,7 +29,7 @@ def recorder() -> Recorder:
 
 class FoldInput(BaseActionSource):
     async def read_action(self, *, request: DecisionRequest) -> Action:
-        assert request.player_id == "human"
+        assert request.player_id.version == 4
         return Action(kind=ActionKind.FOLD)
 
 

@@ -2,6 +2,8 @@
 
 from abc import ABC
 from abc import abstractmethod
+from uuid import UUID
+from uuid import uuid4
 
 from poker.core.types.decisions import DecisionRequest
 from poker.core.types.decisions import PlayerDecision
@@ -10,13 +12,11 @@ from poker.core.types.decisions import PlayerDecision
 class BasePlayer(ABC):
     """A stable player identity and an asynchronous decision contract."""
 
-    def __init__(self, *, player_id: str) -> None:
-        if not player_id.strip():
-            raise ValueError("Player identity must not be empty")
-        self._player_id = player_id
+    def __init__(self, *, player_id: UUID | None = None) -> None:
+        self._player_id = player_id if player_id is not None else uuid4()
 
     @property
-    def player_id(self) -> str:
+    def player_id(self) -> UUID:
         """Return the identity that remains stable across positions."""
         return self._player_id
 

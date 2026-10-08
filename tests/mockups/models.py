@@ -23,6 +23,7 @@ from poker.core.types.primitives import Seat
 from poker.core.types.primitives import Street
 from poker.core.types.table import PlayerObservation
 from poker.core.types.table import TableState
+from tests.mockups.ids import mock_uuid
 
 
 @pytest.fixture
@@ -47,8 +48,8 @@ class StubModel(nn.Module):
 
 def make_request(*, legal_kinds: tuple[ActionKind, ...]) -> DecisionRequest:
     return DecisionRequest(
-        player_id="learner",
-        hand_id=1,
+        player_id=mock_uuid(1),
+        hand_id=mock_uuid(100),
         revision=0,
         observation=PlayerObservation(
             seat=Seat.UTG,

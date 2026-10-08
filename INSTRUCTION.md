@@ -43,8 +43,9 @@ The Step 01 MVP specification has been agreed with the user:
 ## Approved Architecture Refinement (2026-10-08)
 
 - Application uses functions only and owns no stateful classes or mutable globals.
-- Core GameRunner seats BasePlayer objects and owns identity, position rotation and
-  hand lifecycle. BaseGameEngine executes one hand; PokerKitGameEngine adapts it.
+- Core GameRunner seats BasePlayer objects and owns UUID v4 player/hand IDs,
+  position rotation and hand lifecycle. BaseGameEngine executes one hand;
+  PokerKitGameEngine adapts it.
 - BasePlayer has HumanPlayer and ModelPlayer implementations. ModelPlayer holds
   `model: nn.Module` directly, with an injected observation encoder and its own
   sampling generator. No mandatory Policy wrapper owns the module.
@@ -254,7 +255,7 @@ The Step 01 MVP specification has been agreed with the user:
   not on PATH.
 
 - Step 05 architecture refinement: split Core GameRunner from the single-hand engine,
-  added stable player identities, HumanPlayer and direct-module ModelPlayer,
+  added stable UUID v4 player/hand IDs, HumanPlayer and direct-module ModelPlayer,
   isolated player observations and applied-action history, GameRunner.run_hand,
   and function-only play_usecase. Recorded the ownership decision in ARCH-013.
   PPO, terminal RL rewards, the full encoder/model, checkpoints and interactive CLI

@@ -1,6 +1,8 @@
 """A six-player game with stable identities and an injected hand engine."""
 
 from decimal import Decimal
+from uuid import UUID
+from uuid import uuid4
 
 from poker.core.game_engine.base_game_engine import BaseGameEngine
 from poker.core.players.base_player import BasePlayer
@@ -18,10 +20,10 @@ class GameRunner:
     def __init__(self, *, engine: BaseGameEngine) -> None:
         self._engine = engine
         self._players: dict[int, BasePlayer] = {}
-        self._stacks: dict[str, Decimal] = {}
+        self._stacks: dict[UUID, Decimal] = {}
         self._position_players: tuple[BasePlayer, ...] = ()
         self._starting_stacks: tuple[Decimal, ...] = ()
-        self._hand_id = 0
+        self._hand_id: UUID | None = None
         self._revision = 0
 
     def seat_player(
@@ -32,7 +34,7 @@ class GameRunner:
         stack: Decimal = Decimal("100"),
     ) -> None:
         """Seat a player without starting a hand or assigning private cards."""
-        if self._hand_id:
+        if self._hand_id is not None:
             raise ValueError("Players can only be seated before a hand starts")
         if table_seat not in range(6) or table_seat in self._players:
             raise ValueError(
@@ -48,18 +50,18 @@ class GameRunner:
     @property
     def is_terminal(self) -> bool:
         """Return whether the current hand has completed."""
-        return self._hand_id > 0 and self._engine.is_terminal
+        return self._hand_id is not None and self._engine.is_terminal
 
     def start_hand(self) -> None:
         """Preserve initial positions, then rotate and carry settled stacks."""
         if len(self._players) != 6:
             raise ValueError("A six-max game requires exactly six players")
-        if self._hand_id and not self.is_terminal:
+        if self._hand_id is not None and not self.is_terminal:
             raise ValueError(
                 "The current hand must finish before starting another"
             )
         stacks = self._stacks.copy()
-        if self._hand_id:
+        if self._hand_id is not None:
             for player, stack in zip(
                 self._position_players,
                 self._engine.get_stacks(),
@@ -74,22 +76,23 @@ class GameRunner:
             raise ValueError(
                 "A six-player session ends when a player has no chips"
             )
+        hand_id = uuid4()
         self._engine.start_hand(starting_stacks=starting_stacks)
         self._stacks = stacks
         self._position_players = players
         self._starting_stacks = starting_stacks
-        self._hand_id += 1
+        self._hand_id = hand_id
         self._revision = 0
 
     def get_player(self, *, seat: Seat) -> BasePlayer:
         """Resolve a hand position to its stable player object."""
-        if not self._hand_id:
+        if self._hand_id is None:
             raise ValueError("Start a hand before resolving a position")
         return self._position_players[tuple(Seat).index(seat)]
 
     def get_decision_request(self) -> DecisionRequest | None:
         """Return an isolated observation for the next acting player."""
-        if not self._hand_id or self.is_terminal:
+        if self._hand_id is None or self.is_terminal:
             return None
         seat = self._engine.acting_seat
         if seat is None:
@@ -111,7 +114,7 @@ class GameRunner:
     ) -> Action:
         """Reject stale or out-of-turn decisions before touching the engine."""
         seat = self._engine.acting_seat
-        if not self._hand_id or self.is_terminal or seat is None:
+        if self._hand_id is None or self.is_terminal or seat is None:
             raise ValueError("There is no acting player")
         if (
             request.hand_id != self._hand_id
@@ -128,7 +131,7 @@ class GameRunner:
 
     def get_hand_result(self) -> HandResult:
         """Attribute terminal chip profit to each player before rotating."""
-        if not self.is_terminal:
+        if not self.is_terminal or self._hand_id is None:
             raise ValueError("The hand must finish before reading its result")
         return HandResult(
             hand_id=self._hand_id,

@@ -39,8 +39,10 @@ Inject dependencies explicitly; do not introduce shared mutable game registries.
 ## Game and player ownership
 
 `core/game_runner/GameRunner` seats six `BasePlayer` objects and owns stable
-identities, initial positions, later button rotation, and hand revisions. `BaseGameEngine` executes a
-single hand; `infrastructure/game_engine/PokerKitGameEngine` adapts native state,
+UUID v4 player identities, UUID v4 hand IDs, initial positions, button rotation,
+and hand revisions. A player ID is generated once per player; every new hand gets
+a fresh hand ID. `BaseGameEngine` executes a single hand;
+`infrastructure/game_engine/PokerKitGameEngine` adapts native state,
 legal actions, snapshots, and payouts. Engine and behavioral player lifecycles are
 separate. The first hand keeps its initial seating; later hands carry settled
 stacks and rotate positions. Physical table indices differ from hand positions.
@@ -50,8 +52,7 @@ stacks and rotate positions. Physical table indices differ from hand positions.
 generator per player. Its encoder is injected and is shared with future training.
 Action selection applies a legal mask to 15 logits and preserves sampling metadata.
 `GameRunner.run_hand()` drives both player kinds and owns the sequential hand
-lifecycle.
-`play_usecase` is a thin asynchronous function that delegates to this method.
+lifecycle. `play_usecase` is a thin asynchronous function that delegates to this method.
 Optional observers can record private player-local decisions but must not render
 those records as public game output.
 

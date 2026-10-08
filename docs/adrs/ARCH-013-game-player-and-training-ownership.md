@@ -18,9 +18,11 @@ requires ModelPlayer to hold a PyTorch nn.Module directly.
 
 ## Decision
 
-Core GameRunner owns a six-player roster, stable player identities, hand revisions,
-position rotation, and consecutive-hand lifecycle. BaseGameEngine defines the
-single-hand execution contract; PokerKitGameEngine implements it in infrastructure.
+Core GameRunner owns a six-player roster, stable UUID v4 player identities, UUID v4
+hand IDs, hand revisions, position rotation, and consecutive-hand lifecycle. Each
+BasePlayer receives one ID at construction, and GameRunner creates a fresh hand ID
+when each hand starts. BaseGameEngine defines the single-hand execution contract;
+PokerKitGameEngine implements it in infrastructure.
 The engine owns native cards, stacks, legal transitions, and payouts. GameRunner reads
 snapshots through that contract rather than duplicating native rules.
 
@@ -31,8 +33,10 @@ ModelPlayer instances may share a module while keeping identities and sampling
 state separate. Module mode and updates are managed by the caller, not by each turn.
 
 ```python
+from uuid import uuid4
+
 player = ModelPlayer(
-    player_id="learner",
+    player_id=uuid4(),
     model=model,
     encoder=encoder,
     seed=42,
@@ -44,8 +48,8 @@ Application contains use-case functions only. Inject Core objects and I/O ports
 through keyword arguments. Do not retain state in application classes, global
 variables, or closures. Function-local references to returned progress are allowed.
 GameRunner.run_hand is the common sequential execution method used by play_usecase
-and future rollout collection. The GameRunner that owns the roster and hand lifecycle
-also drives each seated player's action selection.
+and future rollout collection. The GameRunner that owns the roster and hand
+lifecycle also drives each seated player's action selection.
 
 ```python
 async def play_usecase(*, game_runner: GameRunner) -> HandResult:

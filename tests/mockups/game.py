@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from decimal import Decimal
+from uuid import UUID
 
 import pytest
 
@@ -24,6 +25,7 @@ from poker.core.types.primitives import Seat
 from poker.core.types.primitives import Street
 from poker.core.types.table import PlayerObservation
 from poker.core.types.table import TableState
+from tests.mockups.ids import mock_uuid
 
 
 @pytest.fixture
@@ -33,6 +35,9 @@ def mock_game_engine() -> MockGameEngine:
 
 
 class ScriptedPlayer(BasePlayer):
+    def __init__(self, *, player_id: UUID | None = None) -> None:
+        super().__init__(player_id=player_id)
+
     async def select_action(
         self, *, request: DecisionRequest
     ) -> PlayerDecision:
@@ -106,7 +111,7 @@ def make_game(*, engine: BaseGameEngine) -> GameRunner:
     game = GameRunner(engine=engine)
     for index in range(6):
         game.seat_player(
-            player=ScriptedPlayer(player_id=f"player-{index}"),
+            player=ScriptedPlayer(player_id=mock_uuid(index)),
             table_seat=index,
             stack=Decimal(100 + index),
         )

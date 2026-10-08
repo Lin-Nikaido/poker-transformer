@@ -9,6 +9,7 @@ from poker.core.types.primitives import Seat
 from tests.mockups.game import MockGameEngine
 from tests.mockups.game import ScriptedPlayer
 from tests.mockups.game import make_game
+from tests.mockups.ids import mock_uuid
 
 
 def test_game_seats_players_without_starting_or_rotating_first_hand(
@@ -21,8 +22,8 @@ def test_game_seats_players_without_starting_or_rotating_first_hand(
     game.start_hand()
 
     assert engine.starts == [tuple(Decimal(100 + index) for index in range(6))]
-    assert game.get_player(seat=Seat.UTG).player_id == "player-0"
-    assert game.get_player(seat=Seat.BTN).player_id == "player-3"
+    assert game.get_player(seat=Seat.UTG).player_id == mock_uuid(0)
+    assert game.get_player(seat=Seat.BTN).player_id == mock_uuid(3)
 
 
 def finish_hand(*, game: GameRunner) -> None:
@@ -44,7 +45,7 @@ def test_next_hand_rotates_players_and_carries_profit_by_identity(
     result = game.get_hand_result()
 
     assert result.players[4].net_profit == Decimal("-0.5")
-    assert result.players[5].player_id == "player-5"
+    assert result.players[5].player_id == mock_uuid(5)
     assert result.players[5].net_profit == Decimal("0.5")
     assert sum(player.net_profit for player in result.players) == 0
 
@@ -58,7 +59,7 @@ def test_next_hand_rotates_players_and_carries_profit_by_identity(
         Decimal("105.5"),
         Decimal("100"),
     )
-    assert game.get_player(seat=Seat.UTG).player_id == "player-1"
+    assert game.get_player(seat=Seat.UTG).player_id == mock_uuid(1)
     assert result.players[5].seat is Seat.BB
 
 
@@ -66,11 +67,17 @@ def test_rejects_duplicate_seats_and_identities_without_changing_roster(
     mock_game_engine: MockGameEngine,
 ) -> None:
     game = GameRunner(engine=mock_game_engine)
-    game.seat_player(player=ScriptedPlayer(player_id="one"), table_seat=0)
+    game.seat_player(
+        player=ScriptedPlayer(player_id=mock_uuid(10)), table_seat=0
+    )
     with pytest.raises(ValueError, match="unique table seat"):
-        game.seat_player(player=ScriptedPlayer(player_id="two"), table_seat=0)
+        game.seat_player(
+            player=ScriptedPlayer(player_id=mock_uuid(11)), table_seat=0
+        )
     with pytest.raises(ValueError, match="unique identity"):
-        game.seat_player(player=ScriptedPlayer(player_id="one"), table_seat=1)
+        game.seat_player(
+            player=ScriptedPlayer(player_id=mock_uuid(10)), table_seat=1
+        )
     with pytest.raises(ValueError, match="exactly six"):
         game.start_hand()
 
@@ -83,7 +90,9 @@ def test_rejects_active_hand_restart_and_late_seating(
     with pytest.raises(ValueError, match="must finish"):
         game.start_hand()
     with pytest.raises(ValueError, match="before a hand"):
-        game.seat_player(player=ScriptedPlayer(player_id="late"), table_seat=0)
+        game.seat_player(
+            player=ScriptedPlayer(player_id=mock_uuid(12)), table_seat=0
+        )
     with pytest.raises(ValueError, match="must finish"):
         game.get_hand_result()
 
@@ -112,7 +121,7 @@ def test_rejects_wrong_identity_and_previous_hand_requests(
     game.start_hand()
     request = game.get_decision_request()
     assert request is not None
-    forged_request = request.model_copy(update={"player_id": "player-1"})
+    forged_request = request.model_copy(update={"player_id": mock_uuid(1)})
     with pytest.raises(ValueError, match="another player"):
         game.submit_action(
             request=forged_request, action=Action(kind=ActionKind.FOLD)
@@ -136,5 +145,7 @@ def test_rejects_invalid_initial_stacks(
     game = GameRunner(engine=mock_game_engine)
     with pytest.raises(ValueError, match="finite and positive"):
         game.seat_player(
-            player=ScriptedPlayer(player_id="one"), table_seat=0, stack=stack
+            player=ScriptedPlayer(player_id=mock_uuid(10)),
+            table_seat=0,
+            stack=stack,
         )

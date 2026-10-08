@@ -1,5 +1,7 @@
 """A seated player that directly owns a reference to a PyTorch module."""
 
+from uuid import UUID
+
 import torch
 from torch import Tensor
 from torch import nn
@@ -19,7 +21,7 @@ class ModelPlayer(BasePlayer):
     def __init__(
         self,
         *,
-        player_id: str,
+        player_id: UUID | None = None,
         model: nn.Module,
         encoder: BaseObservationEncoder,
         seed: int,

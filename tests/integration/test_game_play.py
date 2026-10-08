@@ -20,23 +20,33 @@ async def test_human_and_five_models_share_engine_and_preserve_identity_across_h
 ) -> None:
     model = FoldModel().eval()
     game = GameRunner(engine=PokerKitGameEngine())
+    human = HumanPlayer(action_source=fold_input)
     game.seat_player(
-        player=HumanPlayer(player_id="human", action_source=fold_input),
+        player=human,
         table_seat=0,
     )
+    model_players: list[ModelPlayer] = []
     for index in range(1, 6):
+        model_player = ModelPlayer(
+            model=model,
+            encoder=stub_encoder,
+            seed=index,
+        )
+        model_players.append(model_player)
         game.seat_player(
-            player=ModelPlayer(
-                player_id=f"model-{index}",
-                model=model,
-                encoder=stub_encoder,
-                seed=index,
-            ),
+            player=model_player,
             table_seat=index,
         )
     recorder = recorder
 
     first = await play_usecase(game_runner=game, observer=recorder)
+    assert first.hand_id.version == 4
+    assert human.player_id.version == 4
+    assert all(player.player_id.version == 4 for player in model_players)
+    assert (
+        len({human.player_id, *(player.player_id for player in model_players)})
+        == 6
+    )
     assert first.players[5].net_profit == Decimal("0.5")
     assert recorder.decisions[0][1].policy_trace is None
     assert all(
@@ -50,10 +60,11 @@ async def test_human_and_five_models_share_engine_and_preserve_identity_across_h
     )
 
     second = await play_usecase(game_runner=game)
-    assert second.hand_id == 2
-    assert second.players[0].player_id == "model-1"
-    assert second.players[5].player_id == "human"
-    assert game.get_player(seat=Seat.BB).player_id == "human"
+    assert second.hand_id.version == 4
+    assert second.hand_id != first.hand_id
+    assert second.players[0].player_id == model_players[0].player_id
+    assert second.players[5].player_id == human.player_id
+    assert game.get_player(seat=Seat.BB).player_id == human.player_id
     assert sum(player.final_stack for player in second.players) == Decimal(
         "600"
     )

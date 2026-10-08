@@ -4,6 +4,7 @@ from torch import nn
 
 from poker.core.players.model_player import ModelPlayer
 from poker.core.types.actions import ActionKind
+from tests.mockups.ids import mock_uuid
 from tests.mockups.models import StubEncoder
 from tests.mockups.models import StubModel
 from tests.mockups.models import make_request
@@ -15,10 +16,10 @@ async def test_players_share_updated_weights_without_sharing_random_state(
 ) -> None:
     model = StubModel()
     first = ModelPlayer(
-        player_id="learner", model=model, encoder=stub_encoder, seed=7
+        player_id=mock_uuid(1), model=model, encoder=stub_encoder, seed=7
     )
     second = ModelPlayer(
-        player_id="learner", model=model, encoder=stub_encoder, seed=7
+        player_id=mock_uuid(1), model=model, encoder=stub_encoder, seed=7
     )
     request = make_request(
         legal_kinds=(ActionKind.FOLD, ActionKind.CALL, ActionKind.RAISE)
@@ -50,7 +51,7 @@ async def test_model_player_rejects_another_players_request(
     stub_encoder: StubEncoder,
 ) -> None:
     player = ModelPlayer(
-        player_id="other", model=StubModel(), encoder=stub_encoder, seed=7
+        player_id=mock_uuid(2), model=StubModel(), encoder=stub_encoder, seed=7
     )
     with pytest.raises(ValueError, match="another player"):
         await player.select_action(
@@ -63,7 +64,7 @@ async def test_model_player_rejects_empty_legal_mask(
     stub_encoder: StubEncoder,
 ) -> None:
     player = ModelPlayer(
-        player_id="learner", model=StubModel(), encoder=stub_encoder, seed=7
+        player_id=mock_uuid(1), model=StubModel(), encoder=stub_encoder, seed=7
     )
     with pytest.raises(ValueError, match="at least one legal"):
         await player.select_action(request=make_request(legal_kinds=()))
@@ -87,7 +88,7 @@ async def test_model_player_rejects_invalid_model_output(
     output: torch.Tensor, stub_encoder: StubEncoder
 ) -> None:
     player = ModelPlayer(
-        player_id="learner",
+        player_id=mock_uuid(1),
         model=InvalidModel(output=output),
         encoder=stub_encoder,
         seed=7,
@@ -104,7 +105,7 @@ async def test_model_player_owns_supplied_module_and_masks_illegal_actions(
 ) -> None:
     model = StubModel()
     player = ModelPlayer(
-        player_id="learner", model=model, encoder=stub_encoder, seed=7
+        player_id=mock_uuid(1), model=model, encoder=stub_encoder, seed=7
     )
 
     decision = await player.select_action(

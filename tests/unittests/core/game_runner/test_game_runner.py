@@ -6,15 +6,15 @@ from poker.core.game_runner.game_runner import GameRunner
 from poker.core.types.actions import Action
 from poker.core.types.actions import ActionKind
 from poker.core.types.primitives import Seat
-from tests.mockups.game import FakeEngine
+from tests.mockups.game import MockGameEngine
 from tests.mockups.game import ScriptedPlayer
 from tests.mockups.game import make_game
 
 
 def test_game_seats_players_without_starting_or_rotating_first_hand(
-    fake_engine: FakeEngine,
+    mock_game_engine: MockGameEngine,
 ) -> None:
-    engine = fake_engine
+    engine = mock_game_engine
     game = make_game(engine=engine)
 
     assert engine.starts == []
@@ -35,9 +35,9 @@ def finish_hand(*, game: GameRunner) -> None:
 
 
 def test_next_hand_rotates_players_and_carries_profit_by_identity(
-    fake_engine: FakeEngine,
+    mock_game_engine: MockGameEngine,
 ) -> None:
-    engine = fake_engine
+    engine = mock_game_engine
     game = make_game(engine=engine)
     game.start_hand()
     finish_hand(game=game)
@@ -63,9 +63,9 @@ def test_next_hand_rotates_players_and_carries_profit_by_identity(
 
 
 def test_rejects_duplicate_seats_and_identities_without_changing_roster(
-    fake_engine: FakeEngine,
+    mock_game_engine: MockGameEngine,
 ) -> None:
-    game = GameRunner(engine=fake_engine)
+    game = GameRunner(engine=mock_game_engine)
     game.seat_player(player=ScriptedPlayer(player_id="one"), table_seat=0)
     with pytest.raises(ValueError, match="unique table seat"):
         game.seat_player(player=ScriptedPlayer(player_id="two"), table_seat=0)
@@ -76,9 +76,9 @@ def test_rejects_duplicate_seats_and_identities_without_changing_roster(
 
 
 def test_rejects_active_hand_restart_and_late_seating(
-    fake_engine: FakeEngine,
+    mock_game_engine: MockGameEngine,
 ) -> None:
-    game = make_game(engine=fake_engine)
+    game = make_game(engine=mock_game_engine)
     game.start_hand()
     with pytest.raises(ValueError, match="must finish"):
         game.start_hand()
@@ -89,9 +89,9 @@ def test_rejects_active_hand_restart_and_late_seating(
 
 
 def test_rejects_stale_decision_without_advancing_engine(
-    fake_engine: FakeEngine,
+    mock_game_engine: MockGameEngine,
 ) -> None:
-    engine = fake_engine
+    engine = mock_game_engine
     game = make_game(engine=engine)
     game.start_hand()
     request = game.get_decision_request()
@@ -106,9 +106,9 @@ def test_rejects_stale_decision_without_advancing_engine(
 
 
 def test_rejects_wrong_identity_and_previous_hand_requests(
-    fake_engine: FakeEngine,
+    mock_game_engine: MockGameEngine,
 ) -> None:
-    game = make_game(engine=fake_engine)
+    game = make_game(engine=mock_game_engine)
     game.start_hand()
     request = game.get_decision_request()
     assert request is not None
@@ -117,23 +117,23 @@ def test_rejects_wrong_identity_and_previous_hand_requests(
         game.submit_action(
             request=forged_request, action=Action(kind=ActionKind.FOLD)
         )
-    assert fake_engine.actions == []
+    assert mock_game_engine.actions == []
     finish_hand(game=game)
     game.start_hand()
     with pytest.raises(ValueError, match="stale"):
         game.submit_action(
             request=request, action=Action(kind=ActionKind.FOLD)
         )
-    assert fake_engine.actions == []
+    assert mock_game_engine.actions == []
 
 
 @pytest.mark.parametrize(
     "stack", (Decimal("0"), Decimal("-1"), Decimal("NaN"), Decimal("Infinity"))
 )
 def test_rejects_invalid_initial_stacks(
-    stack: Decimal, fake_engine: FakeEngine
+    stack: Decimal, mock_game_engine: MockGameEngine
 ) -> None:
-    game = GameRunner(engine=fake_engine)
+    game = GameRunner(engine=mock_game_engine)
     with pytest.raises(ValueError, match="finite and positive"):
         game.seat_player(
             player=ScriptedPlayer(player_id="one"), table_seat=0, stack=stack

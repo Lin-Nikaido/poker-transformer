@@ -46,14 +46,16 @@ async def test_<feature>_<scenario>():
 
 Prefer the lightest in-process double that proves the behavior. Do not call real AWS or LocalStack from `tests/unittests/`.
 
-Use a fake client for narrow client APIs:
+Name reusable test doubles with the `Mock` class prefix and pytest fixtures with the `mock_` prefix.
+
+Use a Mock-prefixed client for narrow client APIs:
 
 ```python
-class FakeS3Client:
+class MockS3Client:
     def get_object(self, *, Bucket: str, Key: str):
         return {"Body": io.BytesIO(b"hello")}
 
-with patch("poker.infrastructure.dataloader.s3_dataloader.boto3.client", return_value=FakeS3Client()):
+with patch("poker.infrastructure.dataloader.s3_dataloader.boto3.client", return_value=MockS3Client()):
     result = await S3Dataloader().get_content("s3://poker-tmp/hello.txt")
 ```
 
@@ -110,7 +112,7 @@ with pytest.raises(ExternalServiceError):
 - **AAA pattern**: Arrange -> Act -> Assert -- one assertion concept per test
 - **Independent tests**: each test sets up its own state; no shared mutable fixtures
 - **Async**: always `@pytest.mark.asyncio` for `async def` tests
-- **No real I/O**: mock all external calls (AWS -> fake, Stubber, or moto; HTTP -> pytest-mock; DB -> in-memory or mock)
+- **No real I/O**: mock all external calls (AWS -> Mock-prefixed client, Stubber, or moto; HTTP -> pytest-mock; DB -> in-memory or mock)
 - **Real cloud tests**: place under `tests/integration/`, mark real AWS with `real_aws`, and mark ECS dispatch with both `real_aws` and `ecs`
 
 # Running Tests

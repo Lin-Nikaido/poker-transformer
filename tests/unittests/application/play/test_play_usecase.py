@@ -9,15 +9,15 @@ from poker.core.ports.game_observer import BaseGameObserver
 from poker.core.types.game import HandResult
 from poker.core.types.game import PlayerHandResult
 from poker.core.types.primitives import Seat
-from tests.mockups.game import FakeEngine
+from tests.mockups.game import MockGameEngine
 
 
 @pytest.mark.asyncio
 async def test_play_usecase_propagates_core_result(
-    fake_engine: FakeEngine,
+    mock_game_engine: MockGameEngine,
     recorder: BaseGameObserver,
 ) -> None:
-    game = GameRunner(engine=fake_engine)
+    game = GameRunner(engine=mock_game_engine)
     expected_output = HandResult(
         hand_id=1,
         players=tuple(
@@ -43,10 +43,10 @@ async def test_play_usecase_propagates_core_result(
 
 @pytest.mark.asyncio
 async def test_play_usecase_propagates_core_failure(
-    fake_engine: FakeEngine,
+    mock_game_engine: MockGameEngine,
 ) -> None:
     failure = ValueError("Game cannot start")
-    game = GameRunner(engine=fake_engine)
+    game = GameRunner(engine=mock_game_engine)
     with patch.object(game, "run_hand", new=AsyncMock(side_effect=failure)):
         with pytest.raises(ValueError) as caught:
             await play_usecase(game_runner=game)

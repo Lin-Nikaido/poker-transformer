@@ -11,12 +11,12 @@ from poker.core.types.decisions import DecisionRequest
 
 
 @pytest.fixture
-def fake_action_source() -> FakeActionSource:
+def mock_action_source() -> MockActionSource:
     """Create asynchronous input without reading a real terminal."""
-    return FakeActionSource()
+    return MockActionSource()
 
 
-class FakeActionSource(BaseActionSource):
+class MockActionSource(BaseActionSource):
     def __init__(self) -> None:
         self.requests: list[DecisionRequest] = []
 

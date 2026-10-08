@@ -27,9 +27,9 @@ from poker.core.types.table import TableState
 
 
 @pytest.fixture
-def fake_engine() -> FakeEngine:
+def mock_game_engine() -> MockGameEngine:
     """Create a fresh isolated six-player engine."""
-    return FakeEngine()
+    return MockGameEngine()
 
 
 class ScriptedPlayer(BasePlayer):
@@ -40,7 +40,7 @@ class ScriptedPlayer(BasePlayer):
         return PlayerDecision(action=Action(kind=ActionKind.FOLD))
 
 
-class FakeEngine(BaseGameEngine):
+class MockGameEngine(BaseGameEngine):
     def __init__(self) -> None:
         self.starts: list[tuple[Decimal, ...]] = []
         self.actions: list[Action] = []

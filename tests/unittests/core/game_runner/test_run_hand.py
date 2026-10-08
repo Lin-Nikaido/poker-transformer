@@ -1,16 +1,16 @@
 import pytest
 
-from tests.mockups.game import FakeEngine
+from tests.mockups.game import MockGameEngine
 from tests.mockups.game import make_game
 from tests.mockups.play import Recorder
 
 
 @pytest.mark.asyncio
 async def test_game_run_hand_records_only_applied_decisions_with_stable_requests(
-    fake_engine: FakeEngine,
+    mock_game_engine: MockGameEngine,
     recorder: Recorder,
 ) -> None:
-    game = make_game(engine=fake_engine)
+    game = make_game(engine=mock_game_engine)
     result = await game.run_hand(observer=recorder)
 
     assert result.hand_id == 1
@@ -29,10 +29,10 @@ async def test_game_run_hand_records_only_applied_decisions_with_stable_requests
 
 @pytest.mark.asyncio
 async def test_game_run_hand_rejects_restarting_an_unfinished_hand(
-    fake_engine: FakeEngine,
+    mock_game_engine: MockGameEngine,
 ) -> None:
-    game = make_game(engine=fake_engine)
+    game = make_game(engine=mock_game_engine)
     game.start_hand()
     with pytest.raises(ValueError, match="must finish"):
         await game.run_hand()
-    assert fake_engine.actions == []
+    assert mock_game_engine.actions == []

@@ -43,12 +43,13 @@ game.seat_player(player=player, table_seat=0)
 Application contains use-case functions only. Inject Core objects and I/O ports
 through keyword arguments. Do not retain state in application classes, global
 variables, or closures. Function-local references to returned progress are allowed.
-Core run_hand is the common sequential execution function used by play_usecase
-and future rollout collection; no stateful runner class is needed.
+Game.run_hand is the common sequential execution method used by play_usecase
+and future rollout collection. The Game that owns the roster and hand lifecycle
+also drives each seated player's action selection.
 
 ```python
 async def play_usecase(*, game: Game) -> HandResult:
-    return await run_hand(game=game)
+    return await game.run_hand()
 ```
 
 For later learning steps, Core SelfPlayTrainer will hold the learner ModelPlayer,
@@ -78,9 +79,11 @@ resolved through the existing core sizing function and recorded as applied amoun
 They place game and learning state in the layer the user explicitly requires to
 remain function-only.
 
-**Alternative: Game calls players and owns optimization**
-It combines poker state, asynchronous interaction, trajectory collection, and PPO
-updates, making isolated rule tests and shared inference harder.
+**Alternative: a standalone Core run_hand function**
+It makes the hand-lifecycle owner an implicit argument to a function. Keeping
+execution on Game makes the roster, current hand, and player action loop one
+cohesive domain capability. Game only coordinates player decisions; rollout
+collection and PPO optimization remain separate learning responsibilities.
 
 **Alternative: a mandatory Policy object between Player and Module**
 It adds an ownership indirection that is unnecessary for the approved design.

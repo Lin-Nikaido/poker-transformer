@@ -49,9 +49,10 @@ stacks and rotate positions. Physical table indices differ from hand positions.
 `nn.Module`, shared if desired by five opponents, with a separate sampling
 generator per player. Its encoder is injected and is shared with future training.
 Action selection applies a legal mask to 15 logits and preserves sampling metadata.
-The common Core `run_hand` function drives both player kinds. `play_usecase` is a
-thin asynchronous function over that runner. Optional observers can record private
-player-local decisions but must not render those records as public game output.
+`Game.run_hand()` drives both player kinds and owns the sequential hand lifecycle.
+`play_usecase` is a thin asynchronous function that delegates to this method.
+Optional observers can record private player-local decisions but must not render
+those records as public game output.
 
 ## Training ownership and remaining work
 

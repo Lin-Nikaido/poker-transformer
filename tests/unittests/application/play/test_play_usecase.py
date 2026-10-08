@@ -30,14 +30,15 @@ async def test_play_usecase_propagates_core_result(
             for index, seat in enumerate(Seat)
         ),
     )
-    with patch(
-        "poker.application.play.play_usecase.run_hand",
+    with patch.object(
+        game,
+        "run_hand",
         new=AsyncMock(return_value=expected_output),
     ) as run_hand:
         result = await play_usecase(game=game, observer=recorder)
 
     assert result is expected_output
-    run_hand.assert_awaited_once_with(game=game, observer=recorder)
+    run_hand.assert_awaited_once_with(observer=recorder)
 
 
 @pytest.mark.asyncio
@@ -45,10 +46,8 @@ async def test_play_usecase_propagates_core_failure(
     fake_engine: FakeEngine,
 ) -> None:
     failure = ValueError("Game cannot start")
-    with patch(
-        "poker.application.play.play_usecase.run_hand",
-        new=AsyncMock(side_effect=failure),
-    ):
+    game = Game(engine=fake_engine)
+    with patch.object(game, "run_hand", new=AsyncMock(side_effect=failure)):
         with pytest.raises(ValueError) as caught:
-            await play_usecase(game=Game(engine=fake_engine))
+            await play_usecase(game=game)
     assert caught.value is failure

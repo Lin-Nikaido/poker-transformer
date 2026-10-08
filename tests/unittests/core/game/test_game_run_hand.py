@@ -1,18 +1,17 @@
 import pytest
 
-from poker.core.game.game_runner import run_hand
 from tests.mockups.game import FakeEngine
 from tests.mockups.game import make_game
 from tests.mockups.play import Recorder
 
 
 @pytest.mark.asyncio
-async def test_runner_records_only_applied_decisions_with_stable_requests(
+async def test_game_run_hand_records_only_applied_decisions_with_stable_requests(
     fake_engine: FakeEngine,
     recorder: Recorder,
 ) -> None:
     game = make_game(engine=fake_engine)
-    result = await run_hand(game=game, observer=recorder)
+    result = await game.run_hand(observer=recorder)
 
     assert result.hand_id == 1
     assert len(recorder.decisions) == 5
@@ -29,11 +28,11 @@ async def test_runner_records_only_applied_decisions_with_stable_requests(
 
 
 @pytest.mark.asyncio
-async def test_runner_rejects_restarting_an_unfinished_hand(
+async def test_game_run_hand_rejects_restarting_an_unfinished_hand(
     fake_engine: FakeEngine,
 ) -> None:
     game = make_game(engine=fake_engine)
     game.start_hand()
     with pytest.raises(ValueError, match="must finish"):
-        await run_hand(game=game)
+        await game.run_hand()
     assert fake_engine.actions == []

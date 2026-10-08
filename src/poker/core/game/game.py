@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from poker.core.game_engine.base_game_engine import BaseGameEngine
 from poker.core.players.base_player import BasePlayer
+from poker.core.ports.game_observer import BaseGameObserver
 from poker.core.types.actions import Action
 from poker.core.types.decisions import DecisionRequest
 from poker.core.types.game import HandResult
@@ -147,3 +148,29 @@ class Game:
                 )
             ),
         )
+
+    async def run_hand(
+        self, *, observer: BaseGameObserver | None = None
+    ) -> HandResult:
+        """Start and complete one hand using the seated players' behavior."""
+        self.start_hand()
+        while not self.is_terminal:
+            request = self.get_decision_request()
+            if request is None:
+                raise RuntimeError(
+                    "A running hand must expose a decision request"
+                )
+            player = self.get_player(seat=request.observation.seat)
+            decision = await player.select_action(
+                request=request.model_copy(deep=True)
+            )
+            applied_action = self.submit_action(
+                request=request, action=decision.action
+            )
+            if observer is not None:
+                await observer.on_decision(
+                    request=request,
+                    decision=decision,
+                    applied_action=applied_action,
+                )
+        return self.get_hand_result()

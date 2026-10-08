@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import pytest
 import torch
 from torch import nn
@@ -44,6 +46,43 @@ async def test_players_share_updated_weights_without_sharing_random_state(
     assert torch.equal(global_rng, torch.random.get_rng_state())
     assert model.training is True
     assert model.logits.grad is None
+
+
+@pytest.mark.parametrize(
+    ("action_index", "kind", "expected_target"),
+    (
+        (5, ActionKind.BET, Decimal("4.8")),
+        (11, ActionKind.RAISE, Decimal("3")),
+    ),
+)
+@pytest.mark.asyncio
+async def test_resolves_sampled_raise_and_preserves_policy_trace(
+    action_index: int,
+    kind: ActionKind,
+    expected_target: Decimal,
+    stub_encoder: StubEncoder,
+) -> None:
+    model = StubModel()
+    with torch.no_grad():
+        model.logits.fill_(-1000)
+        model.logits[action_index] = 0
+    player = ModelPlayer(
+        player_id=mock_uuid(1), model=model, encoder=stub_encoder, seed=7
+    )
+
+    request = make_request(legal_kinds=(kind,))
+    if kind is ActionKind.BET:
+        request.observation.public_state.pot = Decimal("6")
+        for other in request.observation.public_state.players:
+            other.street_bet = Decimal("0")
+    decision = await player.select_action(request=request)
+
+    assert decision.action.kind is kind
+    assert decision.action.amount == expected_target
+    assert decision.action.bet_size is None
+    assert decision.policy_trace.action_index == action_index
+    assert decision.policy_trace.log_probability == pytest.approx(0)
+    assert decision.policy_trace.policy_version == "initial"
 
 
 @pytest.mark.asyncio

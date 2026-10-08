@@ -127,7 +127,7 @@ def test_observations_hide_other_hands_and_do_not_mutate_with_play() -> None:
     assert first.public_state.players[5].committed == Decimal("1")
 
     applied = engine.submit_action(
-        action=Action(kind=ActionKind.RAISE, bet_size=BetSize.POT_80)
+        action=Action(kind=ActionKind.RAISE, amount=Decimal("3"))
     )
     second = engine.get_observation(seat=Seat.MP)
     assert applied.amount == Decimal("3")
@@ -225,50 +225,61 @@ def test_explicit_raise_to_amount_is_preserved() -> None:
 
 
 @pytest.mark.parametrize(
-    ("bet_size", "expected_target"),
+    "action",
     (
-        (BetSize.POT_20, Decimal("2")),
-        (BetSize.POT_50, Decimal("2.25")),
-        (BetSize.POT_80, Decimal("3")),
-        (BetSize.POT_100, Decimal("3.5")),
-        (BetSize.POT_150, Decimal("4.75")),
-        (BetSize.POT_200, Decimal("6")),
+        Action(kind=ActionKind.RAISE),
+        Action(kind=ActionKind.RAISE, bet_size=BetSize.POT_80),
+        Action(
+            kind=ActionKind.RAISE, amount=Decimal("3"), bet_size=BetSize.POT_80
+        ),
     ),
 )
-def test_pot_sizing_resolves_to_legal_preflop_raise(
-    bet_size: BetSize,
-    expected_target: Decimal,
+def test_rejects_unresolved_betting_targets_without_advancing(
+    action: Action,
 ) -> None:
     hand = _create_hand()
 
-    hand.submit_action(
-        action=Action(
-            kind=ActionKind.RAISE,
-            bet_size=bet_size,
-        ),
-    )
+    with pytest.raises(ValueError, match="resolved target amount"):
+        hand.submit_action(action=action)
 
-    assert hand._state.bets[0] == expected_target
+    assert hand.acting_seat is Seat.UTG
+    assert hand._state.bets[0] == Decimal("0")
+    assert (
+        hand.get_observation(seat=Seat.UTG).public_state.action_history.preflop
+        == []
+    )
 
 
 @pytest.mark.parametrize("target_amount", (Decimal("40"), Decimal("50")))
-def test_reraise_at_or_above_half_remaining_stack_becomes_all_in(
+def test_engine_preserves_explicit_targets_at_half_remaining_stack(
     target_amount: Decimal,
 ) -> None:
     hand = _create_hand(starting_stacks=(Decimal("80"),) * 6)
+    hand.submit_action(
+        action=Action(kind=ActionKind.RAISE, amount=Decimal("10"))
+    )
+    hand.submit_action(
+        action=Action(kind=ActionKind.RAISE, amount=Decimal("20"))
+    )
 
-    hand.submit_action(
-        action=Action(kind=ActionKind.RAISE, amount=Decimal("10")),
-    )
-    hand.submit_action(
-        action=Action(kind=ActionKind.RAISE, amount=Decimal("20")),
-    )
-    hand.submit_action(
+    applied = hand.submit_action(
         action=Action(kind=ActionKind.RAISE, amount=target_amount),
     )
 
-    assert hand._state.bets[2] == Decimal("80")
-    assert hand._state.stacks[2] == Decimal("0")
+    assert applied.amount == target_amount
+    assert hand._state.bets[2] == target_amount
+    assert hand._state.stacks[2] == Decimal("80") - target_amount
+
+
+@pytest.mark.parametrize("amount", (Decimal("1.5"), Decimal("101")))
+def test_engine_rejects_targets_outside_legal_bounds(amount: Decimal) -> None:
+    hand = _create_hand()
+
+    with pytest.raises(ValueError):
+        hand.submit_action(action=Action(kind=ActionKind.RAISE, amount=amount))
+
+    assert hand.acting_seat is Seat.UTG
+    assert hand._state.bets[0] == Decimal("0")
 
 
 def test_showdown_awards_best_hand_and_preserves_all_chips() -> None:

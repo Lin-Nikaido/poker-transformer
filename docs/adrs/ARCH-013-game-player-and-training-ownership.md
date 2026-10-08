@@ -26,7 +26,12 @@ PokerKitGameEngine implements it in infrastructure.
 The engine owns native cards, stacks, legal transitions, and payouts. GameRunner reads
 snapshots through that contract rather than duplicating native rules.
 
-BasePlayer defines asynchronous select_action. HumanPlayer uses an injected
+BasePlayer owns asynchronous `select_action`: validate the player identity, await
+the subclass's `_select_action`, and resolve betting targets through the private
+`_resolve_bet_target` method. Subclasses implement `_select_action` and inherit
+this common path. Returned actions contain explicit target amounts; model
+sampling metadata retains the original discrete action index and probability.
+HumanPlayer uses an injected
 BaseActionSource; ModelPlayer directly holds the supplied nn.Module, an observation
 encoder, and its own sampling generator. It never owns an optimizer. Multiple
 ModelPlayer instances may share a module while keeping identities and sampling
@@ -75,7 +80,9 @@ The current ModelPlayer adapter expects a one-dimensional Tensor with 15 logits:
 fold, check, call, six bets, six raises. The injected encoder remains a port; the
 Transformer encoder and value head belong to later roadmap steps. Selection
 returns the original action index, log probability, and policy version. Sizes are
-resolved through the existing core sizing function and recorded as applied amounts.
+resolved by BasePlayer using public street bets, the pot, remaining stack, and
+legal target bounds. The engine executes the resolved action and records applied
+amounts without imposing sizing policy.
 
 ## Rationale
 
@@ -120,6 +127,7 @@ ModelPlayer performs the inference adaptation around its directly held module.
 - Require ModelPlayer to obtain its model through a Policy wrapper.
 - Duplicate stacks or private cards inside behavioral Player objects.
 - Mutate shared model mode or weights during action selection.
+- Bypass BasePlayer's common sizing path by overriding `select_action` in subclasses.
 - Expose native engine state or an observer's private records as public UI output.
 
 ## References

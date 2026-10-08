@@ -35,13 +35,23 @@ def mock_game_engine() -> MockGameEngine:
 
 
 class ScriptedPlayer(BasePlayer):
-    def __init__(self, *, player_id: UUID | None = None) -> None:
+    def __init__(
+        self,
+        player_id: UUID,
+        actions: list[Action] | None = None,
+    ) -> None:
         super().__init__(player_id=player_id)
+        self._actions = actions
 
-    async def select_action(
-        self, *, request: DecisionRequest
+    async def _select_action_impl(
+        self,
+        *,
+        request: DecisionRequest,
     ) -> PlayerDecision:
         self.validate_request(request=request)
+        if self._actions:
+            action = self._actions.pop(0)
+            return PlayerDecision(action=action)
         return PlayerDecision(action=Action(kind=ActionKind.FOLD))
 
 

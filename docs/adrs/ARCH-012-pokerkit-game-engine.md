@@ -27,13 +27,19 @@ hole cards, and executes legal decisions. It does not seat behavioral players.
 GameRunner validates the acting identity and decision revision before
 submitting actions.
 
-Resolve discrete bet sizes in `core/` using domain values supplied by the
-adapter. For pot fraction `s`, the target is the actor's current street bet
+Resolve discrete bet sizes through `BasePlayer._resolve_bet_target` before
+submitting a selected action to the engine. The adapter supplies public
+`street_bet` values separately from cumulative `committed` amounts and exposes
+legal target bounds. For pot fraction `s`, the target is the actor's current street bet
 plus the amount to call plus `s` times the total pot after calling. Clamp
 size-based targets to the legal range. Convert a target at least half the
 actor's remaining stack into the maximum legal target, making the action
 all-in. Explicit target amounts remain unchanged unless the all-in threshold
 applies.
+
+The engine accepts resolved target amounts and validates their legality through
+PokerKit. It rejects unresolved `BetSize` values and does not apply player sizing
+or all-in policy to explicit engine inputs.
 
 ```python
 state = NoLimitTexasHoldem.create_state(
@@ -87,8 +93,9 @@ the MVP can collect training experience.
   `core/game_runner/`.
 - Keep PokerKit state creation and adaptation in
   `infrastructure/game_engine/`.
-- Resolve `BetSize` values into legal targets in `core/` using domain values
-  supplied by the PokerKit adapter.
+- Resolve `BetSize` values into legal targets in the private BasePlayer method
+  using the supplied observation and legal target bounds.
+- Expose current street bets separately from cumulative commitments.
 - Verify all-in transitions, hand ranking, payouts, and chip conservation in
   Step 05.
 
@@ -97,6 +104,7 @@ the MVP can collect training experience.
 - Import PokerKit from `core/` or `application/`.
 - Treat the engine's native state as a player observation.
 - Own seating or button rotation inside the PokerKit adapter.
+- Resolve player bet sizes or apply the half-stack policy inside the engine.
 
 ## References
 

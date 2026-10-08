@@ -50,7 +50,7 @@ class BaseGameEngine(ABC):
         *,
         action: Action,
     ) -> Action:
-        """Apply a decision and return the actual action after sizing."""
+        """Apply an action with resolved betting targets and return its result."""
         ...
 
     @abstractmethod

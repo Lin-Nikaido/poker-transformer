@@ -47,6 +47,13 @@ legal actions, snapshots, and payouts. Engine and behavioral player lifecycles a
 separate. The first hand keeps its initial seating; later hands carry settled
 stacks and rotate positions. Physical table indices differ from hand positions.
 
+BasePlayer's asynchronous `select_action` validates the request, calls the
+subclass's `_select_action`, and resolves bet targets in its private
+`_resolve_bet_target` method. Observations expose each player's current
+`street_bet` separately from cumulative `committed` chips. Engines accept
+resolved target amounts and validate legal transitions without applying player
+sizing policy. Model sampling metadata retains its original action index.
+
 `HumanPlayer` awaits an injected input port. `ModelPlayer.model` is the supplied
 `nn.Module`, shared if desired by five opponents, with a separate sampling
 generator per player. Its encoder is injected and is shared with future training.

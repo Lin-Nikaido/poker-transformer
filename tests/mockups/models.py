@@ -64,12 +64,40 @@ def make_request(*, legal_kinds: tuple[ActionKind, ...]) -> DecisionRequest:
                 pot=Decimal("1.5"),
                 current_actor=Seat.UTG,
                 players=tuple(
-                    PublicPlayerState(seat=seat, stack=Decimal("100"))
+                    PublicPlayerState(
+                        seat=seat,
+                        stack=Decimal("100"),
+                        street_bet=(
+                            Decimal("0.5")
+                            if seat is Seat.SB
+                            else Decimal("1")
+                            if seat is Seat.BB
+                            else Decimal("0")
+                        ),
+                    )
                     for seat in Seat
                 ),
                 community_cards=(),
                 action_history=ActionHistory(),
             ),
         ),
-        legal_actions=LegalActions(action_kinds=legal_kinds),
+        legal_actions=LegalActions(
+            action_kinds=legal_kinds,
+            minimum_bet_or_raise_to=(
+                Decimal("2")
+                if any(
+                    kind in legal_kinds
+                    for kind in (ActionKind.BET, ActionKind.RAISE)
+                )
+                else None
+            ),
+            maximum_bet_or_raise_to=(
+                Decimal("100")
+                if any(
+                    kind in legal_kinds
+                    for kind in (ActionKind.BET, ActionKind.RAISE)
+                )
+                else None
+            ),
+        ),
     )

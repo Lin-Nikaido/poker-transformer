@@ -14,7 +14,6 @@ from pokerkit import Card as PokerKitCard
 from pokerkit import NoLimitTexasHoldem
 from pokerkit.state import State
 
-from poker.core.environment.bet_sizing import resolve_bet_target
 from poker.core.game_engine.base_game_engine import BaseGameEngine
 from poker.core.types.actions import Action
 from poker.core.types.actions import ActionHistory
@@ -178,17 +177,11 @@ class PokerKitGameEngine(BaseGameEngine):
                 kind=action.kind, amount=committed if committed else None
             )
         else:
-            current_bet = Decimal(str(self._state.bets[actor_index]))
-            target_amount = resolve_bet_target(
-                action=action,
-                current_street_bet=current_bet,
-                amount_to_call=Decimal(
-                    str(self._state.checking_or_calling_amount or 0)
-                ),
-                total_pot=Decimal(str(self._state.total_pot_amount)),
-                remaining_stack=Decimal(str(self._state.stacks[actor_index])),
-                legal_actions=legal_actions,
-            )
+            if action.bet_size is not None or action.amount is None:
+                raise ValueError(
+                    "Bet and raise actions require a resolved target amount"
+                )
+            target_amount = action.amount
             self._state.complete_bet_or_raise_to(target_amount)
             applied_action = Action(kind=action.kind, amount=target_amount)
         getattr(self._history, street.value).append(
@@ -235,6 +228,9 @@ class PokerKitGameEngine(BaseGameEngine):
                             str(self._state.starting_stacks[player_index])
                         )
                         - stack,
+                        street_bet=Decimal(
+                            str(self._state.bets[player_index])
+                        ),
                         is_folded=position in self._folded,
                         is_all_in=stack == 0 and position not in self._folded,
                     )

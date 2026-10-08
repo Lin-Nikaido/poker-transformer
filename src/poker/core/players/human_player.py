@@ -20,11 +20,10 @@ class HumanPlayer(BasePlayer):
         super().__init__(player_id=player_id)
         self.action_source = action_source
 
-    async def select_action(
+    async def _select_action_impl(
         self, *, request: DecisionRequest
     ) -> PlayerDecision:
         """Delegate human input through the asynchronous boundary."""
-        self.validate_request(request=request)
         return PlayerDecision(
             action=await self.action_source.read_action(request=request),
         )

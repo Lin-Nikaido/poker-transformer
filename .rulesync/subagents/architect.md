@@ -67,48 +67,7 @@ tests/unittests/core/<module>/
   test_<component>.py
 ```
 
-**4. ADK Agent Design** (if applicable)
-
-**Preferred: Dynamic Agent Registry**
-
-```
-Agent stored as DynamoDB metadata, created via CMS API:
-POST /cms/createAgent
-{
-  "name": "<name>",
-  "description": "<description>",
-  "instruction": "<instruction>",
-  "tools": ["tool_name_1", "tool_name_2"],
-  "permissions": {...}
-}
-
-Retrieved at runtime via AgentRegistry.get_agent("<name>")
-```
-
-**Alternative: Static Agent Directory** (only for complex initialization)
-
-```python
-# src/poker/core/agents/<name>/agent.py
-def get_<name>_agent(model=None) -> Agent:
-    return Agent(
-        name="<name>",
-        description=return_description(),
-        instruction=return_instruction(),
-        tools=[...],
-    )
-```
-
-**5. Registry Key** (if applicable)
-
-```
-Registry: <database_registry | store_registry | dataloader_registry | preprocessor_strategy_registry | chunker_registry | tool_registry | agent_registry>
-Key: "<string-key>"
-Registration mechanism:
-  - Dynamic (agent_registry, tool_registry): Auto-discovered or stored in DynamoDB
-  - Static (other registries): Registration file: src/poker/core/<registry_module>/<registry_file>.py
-```
-
-**6. Data Flow**
+**4. Data Flow**
 
 ```
 FastAPI endpoint (apis/)
@@ -117,7 +76,7 @@ FastAPI endpoint (apis/)
   -> infrastructure client (infrastructure/)
 ```
 
-**7. Design Decisions**
+**5. Design Decisions**
 
 Explain choices. Flag candidates for new ADRs explicitly.
 

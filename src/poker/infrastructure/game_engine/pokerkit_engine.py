@@ -15,7 +15,7 @@ from pokerkit import NoLimitTexasHoldem
 from pokerkit.state import State
 
 from poker.core.environment.bet_sizing import resolve_bet_target
-from poker.core.game_engine.game_engine import BaseGameEngine
+from poker.core.game_engine.base_game_engine import BaseGameEngine
 from poker.core.types.actions import Action
 from poker.core.types.actions import ActionHistory
 from poker.core.types.actions import ActionHistoryEntry

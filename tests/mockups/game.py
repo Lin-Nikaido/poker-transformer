@@ -7,7 +7,7 @@ from decimal import Decimal
 import pytest
 
 from poker.core.game.game import Game
-from poker.core.game_engine.game_engine import BaseGameEngine
+from poker.core.game_engine.base_game_engine import BaseGameEngine
 from poker.core.players.base_player import BasePlayer
 from poker.core.types.actions import Action
 from poker.core.types.actions import ActionHistory

@@ -2,7 +2,7 @@
 
 from decimal import Decimal
 
-from poker.core.game_engine.game_engine import BaseGameEngine
+from poker.core.game_engine.base_game_engine import BaseGameEngine
 from poker.core.players.base_player import BasePlayer
 from poker.core.types.actions import Action
 from poker.core.types.decisions import DecisionRequest

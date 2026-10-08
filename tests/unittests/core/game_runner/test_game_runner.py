@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 import pytest
+from pytest_mock import MockerFixture
 
 from poker.core.game_runner.game_runner import GameRunner
 from poker.core.types.actions import Action
@@ -10,6 +11,32 @@ from tests.mockups.game import MockGameEngine
 from tests.mockups.game import ScriptedPlayer
 from tests.mockups.game import make_game
 from tests.mockups.ids import mock_uuid
+from tests.mockups.play import Recorder
+
+
+@pytest.mark.asyncio
+async def test_run_hand_passes_original_request_to_player_and_observer(
+    mock_game_engine: MockGameEngine,
+    recorder: Recorder,
+    mocker: MockerFixture,
+) -> None:
+    game = GameRunner(engine=mock_game_engine)
+    players = tuple(
+        ScriptedPlayer(player_id=mock_uuid(index)) for index in range(6)
+    )
+    selections = tuple(
+        mocker.spy(player, "select_action") for player in players
+    )
+    for index, player in enumerate(players):
+        game.seat_player(player=player, table_seat=index)
+
+    await game.run_hand(observer=recorder)
+
+    assert len(recorder.decisions) == 5
+    for index, (request, _) in enumerate(recorder.decisions):
+        selections[index].assert_called_once()
+        assert selections[index].call_args.kwargs["request"] is request
+    selections[-1].assert_not_called()
 
 
 def test_game_seats_players_without_starting_or_rotating_first_hand(

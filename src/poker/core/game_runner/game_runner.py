@@ -164,9 +164,7 @@ class GameRunner:
                     "A running hand must expose a decision request"
                 )
             player = self.get_player(seat=request.observation.seat)
-            decision = await player.select_action(
-                request=request.model_copy(deep=True)
-            )
+            decision = await player.select_action(request=request)
             applied_action = self.submit_action(
                 request=request,
                 action=decision.action,

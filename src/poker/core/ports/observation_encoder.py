@@ -12,6 +12,10 @@ class BaseObservationEncoder(ABC):
     """Convert a player-safe observation into model inputs."""
 
     @abstractmethod
-    def encode(self, *, observation: PlayerObservation) -> Tensor:
+    def encode(
+        self,
+        *,
+        observation: PlayerObservation,
+    ) -> Tensor:
         """Encode observable information without external I/O."""
         ...

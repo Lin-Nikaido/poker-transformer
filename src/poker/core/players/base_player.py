@@ -15,7 +15,11 @@ from poker.core.types.decisions import PlayerDecision
 class BasePlayer(ABC):
     """A stable player identity and an asynchronous decision contract."""
 
-    def __init__(self, *, player_id: UUID | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        player_id: UUID | None = None,
+    ) -> None:
         self._player_id = player_id if player_id is not None else uuid4()
 
     @property
@@ -63,7 +67,10 @@ class BasePlayer(ABC):
         ...
 
     def _resolve_bet_amount(
-        self, *, action: Action, request: DecisionRequest
+        self,
+        *,
+        action: Action,
+        request: DecisionRequest,
     ) -> Decimal:
         if action.kind not in (ActionKind.BET, ActionKind.RAISE):
             raise ValueError(

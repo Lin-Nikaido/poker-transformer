@@ -21,7 +21,9 @@ class HumanPlayer(BasePlayer):
         self.action_source = action_source
 
     async def _select_action_impl(
-        self, *, request: DecisionRequest
+        self,
+        *,
+        request: DecisionRequest,
     ) -> PlayerDecision:
         """Delegate human input through the asynchronous boundary."""
         return PlayerDecision(

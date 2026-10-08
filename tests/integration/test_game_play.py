@@ -16,7 +16,9 @@ from tests.mockups.play import Recorder
 
 @pytest.mark.asyncio
 async def test_human_and_five_models_share_engine_and_preserve_identity_across_hands(
-    fold_input: FoldInput, recorder: Recorder, mock_encoder: MockEncoder
+    fold_input: FoldInput,
+    recorder: Recorder,
+    mock_encoder: MockEncoder,
 ) -> None:
     model = FoldModel().eval()
     game = GameRunner(engine=PokerKitGameEngine())

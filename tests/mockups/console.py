@@ -17,12 +17,20 @@ def mock_action_source() -> MockActionSource:
 
 
 class MockActionSource(BaseActionSource):
-    def __init__(self, *, action: Action | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        action: Action | None = None,
+    ) -> None:
         self.action = (
             action if action is not None else Action(kind=ActionKind.CALL)
         )
         self.requests: list[DecisionRequest] = []
 
-    async def read_action(self, *, request: DecisionRequest) -> Action:
+    async def read_action(
+        self,
+        *,
+        request: DecisionRequest,
+    ) -> Action:
         self.requests.append(request)
         return self.action

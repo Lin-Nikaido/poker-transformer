@@ -167,7 +167,8 @@ def test_rejects_wrong_identity_and_previous_hand_requests(
     "stack", (Decimal("0"), Decimal("-1"), Decimal("NaN"), Decimal("Infinity"))
 )
 def test_rejects_invalid_initial_stacks(
-    stack: Decimal, mock_game_engine: MockGameEngine
+    stack: Decimal,
+    mock_game_engine: MockGameEngine,
 ) -> None:
     game = GameRunner(engine=mock_game_engine)
     with pytest.raises(ValueError, match="finite and positive"):

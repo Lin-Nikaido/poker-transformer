@@ -203,7 +203,11 @@ class PokerKitGameEngine(BaseGameEngine):
             raise ValueError("Start a hand before reading stacks")
         return tuple(Decimal(str(stack)) for stack in self._state.stacks)
 
-    def get_observation(self, *, seat: Seat) -> PlayerObservation:
+    def get_observation(
+        self,
+        *,
+        seat: Seat,
+    ) -> PlayerObservation:
         """Project native state into an independent player-safe snapshot."""
         if self._state is None or self.is_terminal:
             raise ValueError("Observations require an active hand")

@@ -33,7 +33,11 @@ def mock_encoder() -> MockEncoder:
 
 
 class MockEncoder(BaseObservationEncoder):
-    def encode(self, *, observation: PlayerObservation) -> Tensor:
+    def encode(
+        self,
+        *,
+        observation: PlayerObservation,
+    ) -> Tensor:
         return torch.tensor([observation.private_hand.cards[0].rank.to_num()])
 
 
@@ -42,7 +46,10 @@ class MockModel(nn.Module):
         super().__init__()
         self.logits = nn.Parameter(torch.arange(15, dtype=torch.float32))
 
-    def forward(self, inputs: Tensor) -> Tensor:
+    def forward(
+        self,
+        inputs: Tensor,
+    ) -> Tensor:
         return self.logits + inputs.sum() * 0
 
 

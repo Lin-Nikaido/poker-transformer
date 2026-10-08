@@ -17,7 +17,11 @@ from poker.core.types.primitives import Seat
 class GameRunner:
     """Own seating, position rotation, and consecutive hand lifecycles."""
 
-    def __init__(self, *, engine: BaseGameEngine) -> None:
+    def __init__(
+        self,
+        *,
+        engine: BaseGameEngine,
+    ) -> None:
         self._engine = engine
         self._players: dict[int, BasePlayer] = {}
         self._stacks: dict[UUID, Decimal] = {}
@@ -84,7 +88,11 @@ class GameRunner:
         self._hand_id = hand_id
         self._revision = 0
 
-    def get_player(self, *, seat: Seat) -> BasePlayer:
+    def get_player(
+        self,
+        *,
+        seat: Seat,
+    ) -> BasePlayer:
         """Resolve a hand position to its stable player object."""
         if self._hand_id is None:
             raise ValueError("Start a hand before resolving a position")
@@ -110,7 +118,10 @@ class GameRunner:
         )
 
     def submit_action(
-        self, *, request: DecisionRequest, action: Action
+        self,
+        *,
+        request: DecisionRequest,
+        action: Action,
     ) -> Action:
         """Reject stale or out-of-turn decisions before touching the engine."""
         seat = self._engine.acting_seat
@@ -153,7 +164,9 @@ class GameRunner:
         )
 
     async def run_hand(
-        self, *, observer: BaseGameObserver | None = None
+        self,
+        *,
+        observer: BaseGameObserver | None = None,
     ) -> HandResult:
         """Start and complete one hand using the seated players' behavior."""
         self.start_hand()

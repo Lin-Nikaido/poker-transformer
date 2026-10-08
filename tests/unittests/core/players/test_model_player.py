@@ -110,11 +110,18 @@ async def test_model_player_rejects_empty_legal_mask(
 
 
 class InvalidModel(nn.Module):
-    def __init__(self, *, output: torch.Tensor) -> None:
+    def __init__(
+        self,
+        *,
+        output: torch.Tensor,
+    ) -> None:
         super().__init__()
         self.output = output
 
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self,
+        inputs: torch.Tensor,
+    ) -> torch.Tensor:
         return self.output + inputs.sum() * 0
 
 
@@ -124,7 +131,8 @@ class InvalidModel(nn.Module):
 )
 @pytest.mark.asyncio
 async def test_model_player_rejects_invalid_model_output(
-    output: torch.Tensor, mock_encoder: MockEncoder
+    output: torch.Tensor,
+    mock_encoder: MockEncoder,
 ) -> None:
     player = ModelPlayer(
         player_id=mock_uuid(1),

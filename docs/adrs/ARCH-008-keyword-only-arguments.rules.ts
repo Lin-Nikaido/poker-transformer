@@ -1,7 +1,119 @@
 /// <reference path="rules.d.ts" />
 
+type Position = { line: number; column: number };
+type ParameterSpan = { start: Position; end: Position };
+
+function astPosition(node: PythonAstNode, end = false): Position {
+  return {
+    line: Number(end ? node.end_lineno : node.lineno),
+    column: Number(end ? node.end_col_offset : node.col_offset),
+  };
+}
+
+function sourceOffset(lines: string[], position: Position): number {
+  const prefix = lines.slice(0, position.line - 1).join('\n');
+  const line = lines[position.line - 1];
+  const column = new TextDecoder().decode(
+    new TextEncoder().encode(line).slice(0, position.column),
+  ).length;
+  return prefix.length + (position.line > 1 ? 1 : 0) + column;
+}
+
+function parameterSpans(node: PythonAstNode): ParameterSpan[] {
+  const args = node.args as PythonAstNode;
+  const positional = [
+    ...(args.posonlyargs as PythonAstNode[]),
+    ...(args.args as PythonAstNode[]),
+  ];
+  const defaults = args.defaults as PythonAstNode[];
+  const keyword = args.kwonlyargs as PythonAstNode[];
+  const keywordDefaults = args.kw_defaults as (PythonAstNode | null)[];
+  const span = (arg: PythonAstNode, value?: PythonAstNode | null, stars = 0): ParameterSpan => {
+    const start = astPosition(arg);
+    start.column -= stars;
+    return { start, end: astPosition(value ?? arg, true) };
+  };
+  return [
+    ...positional.map((arg, index) => span(arg, defaults[index - positional.length + defaults.length])),
+    ...(args.vararg ? [span(args.vararg as PythonAstNode, null, 1)] : []),
+    ...keyword.map((arg, index) => span(arg, keywordDefaults[index])),
+    ...(args.kwarg ? [span(args.kwarg as PythonAstNode, null, 2)] : []),
+  ];
+}
+
+function isVerticalSignature(source: string, node: PythonAstNode): boolean {
+  const spans = parameterSpans(node);
+  if (spans.length < 2) {
+    return true;
+  }
+  const lines = source.split('\n');
+  const start = sourceOffset(lines, spans[0].start);
+  const prefix = source.slice(sourceOffset(lines, astPosition(node)), start).replace(/#[^\n]*/g, '');
+  const opening = prefix.lastIndexOf('(');
+  const beforeFirst = prefix.slice(opening + 1);
+  if (opening < 0 || !/^\s*(?:\*\s*,\s*)?$/.test(beforeFirst) || !beforeFirst.includes('\n')) {
+    return false;
+  }
+  const openingLine = Number(node.lineno) + prefix.slice(0, opening).split('\n').length - 1;
+  const separator = beforeFirst.indexOf('*');
+  if (separator >= 0) {
+    const separatorLine = openingLine + beforeFirst.slice(0, separator).split('\n').length - 1;
+    if (separatorLine <= openingLine || separatorLine >= spans[0].start.line) {
+      return false;
+    }
+  }
+  for (let index = 0; index < spans.length; index++) {
+    const current = spans[index];
+    const next = spans[index + 1];
+    const end = sourceOffset(lines, current.end);
+    const limit = next ? sourceOffset(lines, next.start) : source.length;
+    const gap = source.slice(end, limit).replace(/#[^\n]*/g, '');
+    const punctuation = next ? gap : gap.slice(0, gap.indexOf(')') + 1);
+    if (!/^\s*,\s*(?:[*/]\s*,\s*)*\)?\s*$/.test(punctuation)) {
+      return false;
+    }
+    let previousLine = current.end.line;
+    for (const match of punctuation.matchAll(/[*/)]/g)) {
+      const line = current.end.line + punctuation.slice(0, match.index).split('\n').length - 1;
+      if (line <= previousLine) {
+        return false;
+      }
+      previousLine = line;
+    }
+    if (next && next.start.line <= previousLine) {
+      return false;
+    }
+    if (!next && !punctuation.includes(')')) {
+      return false;
+    }
+  }
+  return true;
+}
+
 export default {
   rules: {
+    'multiline-function-signatures': {
+      description: 'Require one parameter or separator per line and a trailing comma for signatures with 2+ parameters',
+      severity: 'error',
+      check: async (ctx) => {
+        for (const file of ctx.scopedFiles) {
+          const source = await ctx.readFile(file);
+          const tree = await ctx.ast(file, 'python');
+          for (const node of ctx.findAstNodes(tree, 'FunctionDef', 'AsyncFunctionDef')) {
+            if (isVerticalSignature(source, node)) {
+              continue;
+            }
+            ctx.report.violation({
+              message: `Function '${node.name}' has multiple parameters; put each parameter and separator on its own line with a trailing comma`,
+              file,
+              line: node.lineno,
+              fix: 'Move parameters (including self/cls), * and / to separate lines, add a trailing comma, and put the closing parenthesis on a separate line.',
+            });
+          }
+        }
+      },
+    },
+
     'recommend-keyword-only-params': {
       description: 'Require keyword-only parameters (*) for functions with 2+ parameters',
       severity: 'error',

@@ -3,7 +3,7 @@ id: ARCH-008
 title: Keyword-Only Arguments (Explicit Function Calls)
 domain: backend
 status: active
-date: 2026-05-08
+date: 2026-10-08
 rules: true
 files:
   - 'src/poker/**/*.py'
@@ -23,6 +23,43 @@ In 2026, the Python community consensus (PEP 3102) recommends:
 **Functions must clearly define whether arguments are positional or keyword-only. Prefer explicit keyword-only arguments for clarity.**
 
 All functions with **2 or more parameters** should use the `*` separator to make parameters keyword-only, unless they are truly positional by nature (e.g., mathematical operations like `max(a, b)`).
+
+### Function signature style
+
+Every `def` and `async def` with two or more parameters must use a multiline
+signature, regardless of line length. Count `self`, `cls`, `*args`, and
+`**kwargs` as parameters; do not count the `*` and `/` separators. This style
+also applies to constructors, special methods, nested functions, and tests.
+
+Place each parameter and each `*` or `/` separator on its own line. Start the
+parameter list on the line after the opening parenthesis, add a trailing comma
+after the final parameter, and put the closing parenthesis on a separate line.
+Annotations and default expressions may span multiple lines. Functions with
+zero or one parameter may remain on one line. Lambdas are outside this rule.
+
+```python
+async def run_hand(
+    self,
+    *,
+    observer: BaseGameObserver | None = None,
+) -> HandResult:
+    ...
+```
+
+Do not group parameters and separators, even when the signature already spans
+multiple lines:
+
+```python
+async def run_hand(
+    self, *, observer: BaseGameObserver | None = None
+) -> HandResult:
+    ...
+```
+
+The `multiline-function-signatures` Archgate rule enforces this style in
+`src/poker/`. It uses Archgate's Python AST API (Python 3.12) and source
+positions to distinguish parameters from annotations, strings, and default
+expressions. Ruff preserves the vertical style when the trailing comma is kept.
 
 ### Examples
 
@@ -113,12 +150,15 @@ Without enforcement, codebases drift. Some functions use positional, others use 
 - Use required keyword-only parameters (no default value) when parameters are not optional
 - Use descriptive parameter names (e.g., `user_principal` instead of `up`)
 - Call functions with explicit keyword arguments
+- Format every signature with two or more parameters vertically, including `self` and `cls`
+- Put `*` and `/` on separate lines and keep the final parameter's trailing comma
 
 **Don't:**
 
 - Define functions allowing both positional and keyword arguments (unless naturally positional, like `max(a, b)`)
 - Call functions with positional arguments when keyword arguments are available
 - Use single-letter parameter names (except for mathematical operations: `x`, `y`, `z`)
+- Group multiple parameters or separators on the same line, or omit the final trailing comma
 
 **Syntax for keyword-only parameters:**
 

@@ -60,7 +60,11 @@ class MockGameEngine(BaseGameEngine):
         self.starts: list[tuple[Decimal, ...]] = []
         self.actions: list[Action] = []
 
-    def start_hand(self, *, starting_stacks: tuple[Decimal, ...]) -> None:
+    def start_hand(
+        self,
+        *,
+        starting_stacks: tuple[Decimal, ...],
+    ) -> None:
         self.starts.append(starting_stacks)
         self.actions = []
 
@@ -79,7 +83,11 @@ class MockGameEngine(BaseGameEngine):
     def get_legal_actions(self) -> LegalActions:
         return LegalActions(action_kinds=(ActionKind.FOLD,))
 
-    def get_observation(self, *, seat: Seat) -> PlayerObservation:
+    def get_observation(
+        self,
+        *,
+        seat: Seat,
+    ) -> PlayerObservation:
         return PlayerObservation(
             seat=seat,
             private_hand=Hand(
@@ -112,7 +120,11 @@ class MockGameEngine(BaseGameEngine):
             )
         return self.starts[-1]
 
-    def submit_action(self, *, action: Action) -> Action:
+    def submit_action(
+        self,
+        *,
+        action: Action,
+    ) -> Action:
         self.actions.append(action)
         return action
 

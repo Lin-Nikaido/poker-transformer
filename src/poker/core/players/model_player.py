@@ -34,7 +34,9 @@ class ModelPlayer(BasePlayer):
         self.generator = torch.Generator(device="cpu").manual_seed(seed)
 
     async def _select_action_impl(
-        self, *, request: DecisionRequest
+        self,
+        *,
+        request: DecisionRequest,
     ) -> PlayerDecision:
         """Sample a legal action without modifying weights or model mode."""
         action_mask = get_action_mask(legal_actions=request.legal_actions)

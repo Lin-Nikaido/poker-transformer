@@ -54,7 +54,11 @@ class BaseGameEngine(ABC):
         ...
 
     @abstractmethod
-    def get_observation(self, *, seat: Seat) -> PlayerObservation:
+    def get_observation(
+        self,
+        *,
+        seat: Seat,
+    ) -> PlayerObservation:
         """Return public state and only the requested player's private hand."""
         ...
 

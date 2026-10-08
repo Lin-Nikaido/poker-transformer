@@ -28,13 +28,20 @@ def recorder() -> Recorder:
 
 
 class FoldInput(BaseActionSource):
-    async def read_action(self, *, request: DecisionRequest) -> Action:
+    async def read_action(
+        self,
+        *,
+        request: DecisionRequest,
+    ) -> Action:
         assert request.player_id.version == 4
         return Action(kind=ActionKind.FOLD)
 
 
 class FoldModel(nn.Module):
-    def forward(self, inputs: Tensor) -> Tensor:
+    def forward(
+        self,
+        inputs: Tensor,
+    ) -> Tensor:
         logits = torch.full((15,), -1000.0)
         logits[0] = inputs.sum() * 0
         return logits

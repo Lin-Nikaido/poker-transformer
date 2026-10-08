@@ -168,7 +168,8 @@ class GameRunner:
                 request=request.model_copy(deep=True)
             )
             applied_action = self.submit_action(
-                request=request, action=decision.action
+                request=request,
+                action=decision.action,
             )
             if observer is not None:
                 await observer.on_decision(

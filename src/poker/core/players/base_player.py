@@ -23,13 +23,19 @@ class BasePlayer(ABC):
         """Return the identity that remains stable across positions."""
         return self._player_id
 
-    def validate_request(self, *, request: DecisionRequest) -> None:
+    def validate_request(
+        self,
+        *,
+        request: DecisionRequest,
+    ) -> None:
         """Reject another player's decision request."""
         if request.player_id != self.player_id:
             raise ValueError("The decision request belongs to another player")
 
     async def select_action(
-        self, *, request: DecisionRequest
+        self,
+        *,
+        request: DecisionRequest,
     ) -> PlayerDecision:
         """Choose an action and resolve betting targets from the observation."""
         self.validate_request(request=request)
@@ -49,7 +55,9 @@ class BasePlayer(ABC):
 
     @abstractmethod
     async def _select_action_impl(
-        self, *, request: DecisionRequest
+        self,
+        *,
+        request: DecisionRequest,
     ) -> PlayerDecision:
         """Choose an action using only the supplied observation."""
         ...

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from poker.core.ports.action_source import BaseActionSource
+from poker.core.actions.action_source import BaseActionSource
 from poker.core.types.actions import Action
 from poker.core.types.actions import ActionKind
 from poker.core.types.decisions import DecisionRequest

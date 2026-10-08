@@ -50,8 +50,8 @@ GameRunner owns seating, rotation, and the asynchronous run_hand method that dri
 seated players through one hand; BaseGameEngine executes the poker rules for that
 hand. HumanPlayer uses an async input port. ModelPlayer owns a reference to
 nn.Module and an injected encoder. Future SelfPlayTrainer, RolloutCollector and PPOUpdater belong in Core.
-BasePlayer.select_action validates identity, awaits the subclass's _select_action,
-and resolves betting targets in its private _resolve_bet_target method. Observations
+BasePlayer.select_action validates identity, awaits the subclass's _select_action_impl,
+and resolves betting targets in its private _resolve_bet_amount method. Observations
 expose current street_bet separately from cumulative committed chips. Engines
 validate and execute resolved amounts without applying player sizing policy.
 Model sampling metadata retains the original discrete action index and probability.

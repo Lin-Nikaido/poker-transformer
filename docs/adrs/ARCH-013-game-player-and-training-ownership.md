@@ -27,8 +27,8 @@ The engine owns native cards, stacks, legal transitions, and payouts. GameRunner
 snapshots through that contract rather than duplicating native rules.
 
 BasePlayer owns asynchronous `select_action`: validate the player identity, await
-the subclass's `_select_action`, and resolve betting targets through the private
-`_resolve_bet_target` method. Subclasses implement `_select_action` and inherit
+the subclass's `_select_action_impl`, and resolve betting targets through the private
+`_resolve_bet_amount` method. Subclasses implement `_select_action_impl` and inherit
 this common path. Returned actions contain explicit target amounts; model
 sampling metadata retains the original discrete action index and probability.
 HumanPlayer uses an injected

@@ -7,7 +7,7 @@ import torch
 from torch import Tensor
 from torch import nn
 
-from poker.core.ports.action_source import BaseActionSource
+from poker.core.actions.action_source import BaseActionSource
 from poker.core.ports.game_observer import BaseGameObserver
 from poker.core.types.actions import Action
 from poker.core.types.actions import ActionKind

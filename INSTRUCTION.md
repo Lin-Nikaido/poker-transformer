@@ -202,12 +202,13 @@ The Step 01 MVP specification has been agreed with the user:
   PR [#3](https://github.com/Lin-Nikaido/poker-transformer/pull/3) from
   `feat/step-05-mvp-game-rules`.
 - Next step: 06, define the RL environment and reward contract.
-- Step 05 action-size interpretation: each pot fraction is applied to the
-  total pot after calling, then added to the actor's current street bet and
-  call amount. Size-based targets are clamped to legal bounds. A target at
-  least half of the actor's remaining stack is converted to the maximum legal
-  target, making the action all-in. Explicit target amounts are preserved
-  unless the all-in threshold applies.
+- Step 05 action-size interpretation: `BasePlayer.select_action` resolves each
+  pot fraction against the total pot after calling, then adds the actor's
+  current street bet and call amount. Size-based targets are clamped to legal
+  bounds. A target at least half of the actor's remaining stack is converted
+  to the maximum legal target, making the action all-in. Explicit target
+  amounts are preserved unless the all-in threshold applies. The engine only
+  validates and applies the resolved target amount.
 - Step 02 completed: aligned README, architecture guidance, contributing
   instructions, and rulesync overview with the current `src/poker/` package.
   Added the `poker` CLI entry point and configured the PyTorch CPU wheel index.
@@ -243,12 +244,13 @@ The Step 01 MVP specification has been agreed with the user:
 - Step 04 verification: all 21 unit tests passed; Ruff format and lint passed;
   `uv lock --check` resolved 48 packages; `git diff --check` passed; Archgate
   passed all 36 rules.
-- Step 05 implementation: the PokerKit adapter converts every `BetSize` value
+- Step 05 implementation: `BasePlayer.select_action` converts each `BetSize`
   into a legal target using the pot after calling. Targets at least half of the
   actor's remaining stack become all-in. Explicit target amounts remain exact
-  below that threshold. Deterministic tests cover all six sizes, 0.8 POT as a
-  3 BB preflop raise, half-stack and larger all-in triggers, uncontested and
-  showdown payouts, main/side pots, hand ranking, and chip conservation.
+  below that threshold. The PokerKit adapter validates and applies resolved
+  amounts. Deterministic tests cover all six sizes, 0.8 POT as a 3 BB preflop
+  raise, half-stack and larger all-in triggers, uncontested and showdown
+  payouts, main/side pots, hand ranking, and chip conservation.
 - Step 05 verification: all 18 game-engine tests and all 34 unit tests passed;
   Ruff format and lint passed; Archgate passed all 40 rules; `git diff --check`
   passed. Archgate required running the cached CLI through `npx` because it was
@@ -259,7 +261,16 @@ The Step 01 MVP specification has been agreed with the user:
   isolated player observations and applied-action history, GameRunner.run_hand,
   and function-only play_usecase. Recorded the ownership decision in ARCH-013.
   PPO, terminal RL rewards, the full encoder/model, checkpoints and interactive CLI
-  remain pending; the fake-input human-plus-five-model integration is implemented.
+  remain pending; the mock-input human-plus-five-model integration is implemented.
+
+- Latest Step 05 refactor (`4602460`): `BasePlayer.select_action` now validates
+  the request, calls the subclass `_select_action_impl`, and resolves bet/raise
+  sizes in its private `_resolve_bet_amount` method. `PublicPlayerState.street_bet`
+  distinguishes current-street bets from cumulative `committed` chips. The
+  PokerKit engine rejects unresolved `BetSize` inputs and applies explicit
+  targets without sizing policy. Model policy traces retain the sampled action
+  index after target resolution. ADR-012, ADR-013, `docs/ARCHITECTURE.md`, and
+  `.rulesync/rules/architecture.md` record this ownership.
 
 ## Session Handoff
 
@@ -267,17 +278,18 @@ Update these fields at the end of each implementation session:
 
 - Active step: 06 (Steps 01-05 complete; Step 05 and its architecture refinement
   are on the existing PR #3 branch).
-- Work completed this session: refactored GameRunner/Engine ownership and behavioral
-  players on feat/step-05-mvp-game-rules; implemented direct nn.Module ownership,
-  function-only play_usecase, player-safe snapshots and shared hand execution;
-  aligned architecture ADRs and added unit/integration coverage.
-- Verification evidence: 67 unit tests and 2 integration tests passed; Ruff format
-  and lint passed; Archgate passed all 41 rules, including function-only application
-  enforcement. Existing optional NumPy initialization warning remains unchanged.
+- Work completed this session: caught up on `4602460` and documented the bet-size
+  ownership change and current verification state. The earlier GameRunner/player
+  architecture and its ADRs remain in place.
+- Verification evidence: before `4602460`, 67 unit tests and 2 integration tests,
+  Ruff format/lint, and Archgate (41 rules) passed. The latest refactor has not
+  been verified in this session. `tests/unittests/core/players/test_base_player.py`
+  and `tests/integration/test_player_bet_sizing.py` are currently untracked.
 - Remaining work: define and verify the RL environment and terminal reward
   contract in Step 06, then create its pull request before starting Step 07.
 - Blockers: publication status is recorded after local verification; do not update
   branch contents through a GitHub API instead of pushing a local commit.
-- Next action: explore the game-engine port, observation types, and appropriate
-  application/core ownership for the RL environment.
+- Next action: review and track the two new sizing tests, verify the latest
+  BasePlayer/engine refactor, then define the RL environment and terminal reward
+  contract in Step 06.
 

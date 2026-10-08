@@ -2,8 +2,8 @@
 
 from uuid import UUID
 
+from poker.core.actions.action_source import BaseActionSource
 from poker.core.players.base_player import BasePlayer
-from poker.core.ports.action_source import BaseActionSource
 from poker.core.types.decisions import DecisionRequest
 from poker.core.types.decisions import PlayerDecision
 

@@ -7,21 +7,21 @@ from torch import nn
 from poker.core.players.model_player import ModelPlayer
 from poker.core.types.actions import ActionKind
 from tests.mockups.ids import mock_uuid
-from tests.mockups.models import StubEncoder
-from tests.mockups.models import StubModel
+from tests.mockups.models import MockEncoder
+from tests.mockups.models import MockModel
 from tests.mockups.models import make_request
 
 
 @pytest.mark.asyncio
 async def test_players_share_updated_weights_without_sharing_random_state(
-    stub_encoder: StubEncoder,
+    mock_encoder: MockEncoder,
 ) -> None:
-    model = StubModel()
+    model = MockModel()
     first = ModelPlayer(
-        player_id=mock_uuid(1), model=model, encoder=stub_encoder, seed=7
+        player_id=mock_uuid(1), model=model, encoder=mock_encoder, seed=7
     )
     second = ModelPlayer(
-        player_id=mock_uuid(1), model=model, encoder=stub_encoder, seed=7
+        player_id=mock_uuid(1), model=model, encoder=mock_encoder, seed=7
     )
     request = make_request(
         legal_kinds=(ActionKind.FOLD, ActionKind.CALL, ActionKind.RAISE)
@@ -60,14 +60,14 @@ async def test_resolves_sampled_raise_and_preserves_policy_trace(
     action_index: int,
     kind: ActionKind,
     expected_target: Decimal,
-    stub_encoder: StubEncoder,
+    mock_encoder: MockEncoder,
 ) -> None:
-    model = StubModel()
+    model = MockModel()
     with torch.no_grad():
         model.logits.fill_(-1000)
         model.logits[action_index] = 0
     player = ModelPlayer(
-        player_id=mock_uuid(1), model=model, encoder=stub_encoder, seed=7
+        player_id=mock_uuid(1), model=model, encoder=mock_encoder, seed=7
     )
 
     request = make_request(legal_kinds=(kind,))
@@ -87,10 +87,10 @@ async def test_resolves_sampled_raise_and_preserves_policy_trace(
 
 @pytest.mark.asyncio
 async def test_model_player_rejects_another_players_request(
-    stub_encoder: StubEncoder,
+    mock_encoder: MockEncoder,
 ) -> None:
     player = ModelPlayer(
-        player_id=mock_uuid(2), model=StubModel(), encoder=stub_encoder, seed=7
+        player_id=mock_uuid(2), model=MockModel(), encoder=mock_encoder, seed=7
     )
     with pytest.raises(ValueError, match="another player"):
         await player.select_action(
@@ -100,10 +100,10 @@ async def test_model_player_rejects_another_players_request(
 
 @pytest.mark.asyncio
 async def test_model_player_rejects_empty_legal_mask(
-    stub_encoder: StubEncoder,
+    mock_encoder: MockEncoder,
 ) -> None:
     player = ModelPlayer(
-        player_id=mock_uuid(1), model=StubModel(), encoder=stub_encoder, seed=7
+        player_id=mock_uuid(1), model=MockModel(), encoder=mock_encoder, seed=7
     )
     with pytest.raises(ValueError, match="at least one legal"):
         await player.select_action(request=make_request(legal_kinds=()))
@@ -124,12 +124,12 @@ class InvalidModel(nn.Module):
 )
 @pytest.mark.asyncio
 async def test_model_player_rejects_invalid_model_output(
-    output: torch.Tensor, stub_encoder: StubEncoder
+    output: torch.Tensor, mock_encoder: MockEncoder
 ) -> None:
     player = ModelPlayer(
         player_id=mock_uuid(1),
         model=InvalidModel(output=output),
-        encoder=stub_encoder,
+        encoder=mock_encoder,
         seed=7,
     )
     with pytest.raises(ValueError, match="logit"):
@@ -140,11 +140,11 @@ async def test_model_player_rejects_invalid_model_output(
 
 @pytest.mark.asyncio
 async def test_model_player_owns_supplied_module_and_masks_illegal_actions(
-    stub_encoder: StubEncoder,
+    mock_encoder: MockEncoder,
 ) -> None:
-    model = StubModel()
+    model = MockModel()
     player = ModelPlayer(
-        player_id=mock_uuid(1), model=model, encoder=stub_encoder, seed=7
+        player_id=mock_uuid(1), model=model, encoder=mock_encoder, seed=7
     )
 
     decision = await player.select_action(

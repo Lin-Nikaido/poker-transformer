@@ -8,7 +8,7 @@ from poker.core.players.human_player import HumanPlayer
 from poker.core.players.model_player import ModelPlayer
 from poker.core.types.primitives import Seat
 from poker.infrastructure.game_engine.pokerkit_engine import PokerKitGameEngine
-from tests.mockups.models import StubEncoder
+from tests.mockups.models import MockEncoder
 from tests.mockups.play import FoldInput
 from tests.mockups.play import FoldModel
 from tests.mockups.play import Recorder
@@ -16,7 +16,7 @@ from tests.mockups.play import Recorder
 
 @pytest.mark.asyncio
 async def test_human_and_five_models_share_engine_and_preserve_identity_across_hands(
-    fold_input: FoldInput, recorder: Recorder, stub_encoder: StubEncoder
+    fold_input: FoldInput, recorder: Recorder, mock_encoder: MockEncoder
 ) -> None:
     model = FoldModel().eval()
     game = GameRunner(engine=PokerKitGameEngine())
@@ -29,7 +29,7 @@ async def test_human_and_five_models_share_engine_and_preserve_identity_across_h
     for index in range(1, 6):
         model_player = ModelPlayer(
             model=model,
-            encoder=stub_encoder,
+            encoder=mock_encoder,
             seed=index,
         )
         model_players.append(model_player)

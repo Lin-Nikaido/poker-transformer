@@ -27,17 +27,17 @@ from tests.mockups.ids import mock_uuid
 
 
 @pytest.fixture
-def stub_encoder() -> StubEncoder:
+def mock_encoder() -> MockEncoder:
     """Create an encoder consuming only the player's observation."""
-    return StubEncoder()
+    return MockEncoder()
 
 
-class StubEncoder(BaseObservationEncoder):
+class MockEncoder(BaseObservationEncoder):
     def encode(self, *, observation: PlayerObservation) -> Tensor:
         return torch.tensor([observation.private_hand.cards[0].rank.to_num()])
 
 
-class StubModel(nn.Module):
+class MockModel(nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.logits = nn.Parameter(torch.arange(15, dtype=torch.float32))

@@ -48,8 +48,8 @@ separate. The first hand keeps its initial seating; later hands carry settled
 stacks and rotate positions. Physical table indices differ from hand positions.
 
 BasePlayer's asynchronous `select_action` validates the request, calls the
-subclass's `_select_action`, and resolves bet targets in its private
-`_resolve_bet_target` method. Observations expose each player's current
+subclass's `_select_action_impl`, and resolves bet targets in its private
+`_resolve_bet_amount` method. Observations expose each player's current
 `street_bet` separately from cumulative `committed` chips. Engines accept
 resolved target amounts and validate legal transitions without applying player
 sizing policy. Model sampling metadata retains its original action index.

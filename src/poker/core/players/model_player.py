@@ -6,8 +6,8 @@ import torch
 from torch import Tensor
 from torch import nn
 
-from poker.core.environment.action_options import get_action_mask
-from poker.core.environment.action_options import get_action_options
+from poker.core.actions.action_options import get_action_mask
+from poker.core.actions.action_options import get_action_options
 from poker.core.players.base_player import BasePlayer
 from poker.core.ports.observation_encoder import BaseObservationEncoder
 from poker.core.types.decisions import DecisionRequest

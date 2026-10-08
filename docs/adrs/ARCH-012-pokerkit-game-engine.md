@@ -27,7 +27,7 @@ hole cards, and executes legal decisions. It does not seat behavioral players.
 GameRunner validates the acting identity and decision revision before
 submitting actions.
 
-Resolve discrete bet sizes through `BasePlayer._resolve_bet_target` before
+Resolve discrete bet sizes through `BasePlayer._resolve_bet_amount` before
 submitting a selected action to the engine. The adapter supplies public
 `street_bet` values separately from cumulative `committed` amounts and exposes
 legal target bounds. For pot fraction `s`, the target is the actor's current street bet
